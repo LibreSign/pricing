@@ -1,0 +1,119 @@
+openapi: 3.1.0
+info:
+  title: LibreSign Pricing Simulation API
+  version: 1.0.0
+  description: Synthetic, non-homologated simulations only; no commercial authority.
+servers:
+  - url: /
+paths:
+  /v1/simulations:
+    post:
+      operationId: simulatePricing
+      summary: Simulate a synthetic, non-binding price
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimulationRequest'
+            examples:
+              cloud:
+                value:
+                  model: cloud
+                  parameter_version: synthetic-v1
+                  usage: {documents: 100, storage_gb: 10, service_hours: 2}
+              managed:
+                value:
+                  model: managed
+                  parameter_version: synthetic-v1
+                  usage: {documents: 100, storage_gb: 10, service_hours: 2}
+              customer_infrastructure:
+                value:
+                  model: customer_infrastructure
+                  parameter_version: synthetic-v1
+                  usage: {documents: 0, storage_gb: 0, service_hours: 8}
+      responses:
+        '200':
+          description: Synthetic, deterministic result without commercial authorization
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulationResult'
+        '400': {description: Malformed JSON}
+        '401': {description: Missing or invalid bearer token}
+        '413': {description: Request exceeds maximum size}
+        '415': {description: Unsupported content type}
+        '422': {description: Input or parameter version rejected}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    SimulationRequest:
+      type: object
+      additionalProperties: false
+      required: [model, parameter_version, usage]
+      properties:
+        model:
+          type: string
+          enum: [cloud, managed, customer_infrastructure]
+        parameter_version:
+          type: string
+          const: synthetic-v1
+        usage:
+          type: object
+          additionalProperties: false
+          required: [documents, storage_gb, service_hours]
+          properties:
+            documents: {type: integer, minimum: 0, maximum: 1000000}
+            storage_gb: {type: integer, minimum: 0, maximum: 100000}
+            service_hours: {type: integer, minimum: 0, maximum: 10000}
+        candidate_price:
+          type: string
+          pattern: '^(0|[1-9][0-9]{0,8})(\.[0-9]{1,2})?$'
+          description: Optional comparison price, never an authorized offer
+    SimulationResult:
+      type: object
+      required: [engine_version, simulation_fingerprint, parameters, input, currency, billing_basis, synthetic_list_price, evaluated_price, evaluated_price_source, costs, tax_scenarios, explanation, commercialization]
+      properties:
+        engine_version: {type: string}
+        simulation_fingerprint: {type: string, pattern: '^[0-9a-f]{64}$'}
+        parameters:
+          type: object
+          required: [version, sha256, synthetic, homologated]
+          properties:
+            version: {type: string}
+            sha256: {type: string}
+            synthetic: {type: boolean, const: true}
+            homologated: {type: boolean, const: false}
+        input: {$ref: '#/components/schemas/SimulationRequest'}
+        currency: {type: string, const: BRL}
+        billing_basis: {type: string, enum: [monthly, project]}
+        synthetic_list_price: {type: string}
+        evaluated_price: {type: string}
+        evaluated_price_source: {type: string, enum: [synthetic_catalog, candidate_input]}
+        costs: {type: object, additionalProperties: {type: string}}
+        tax_scenarios:
+          type: object
+          additionalProperties:
+            type: object
+            required: [synthetic_tax_rate, tax_amount, incremental_contribution, full_cost_margin, cooperative_residual_potential, incremental_contribution_positive, full_cost_recovered]
+            properties:
+              synthetic_tax_rate: {type: string}
+              tax_amount: {type: string}
+              incremental_contribution: {type: string}
+              full_cost_margin: {type: string}
+              cooperative_residual_potential: {type: string}
+              incremental_contribution_positive: {type: boolean}
+              full_cost_recovered: {type: boolean}
+        explanation: {type: object, additionalProperties: {type: string}}
+        commercialization:
+          type: object
+          required: [quote_allowed, activation_allowed, reason_code]
+          properties:
+            quote_allowed: {type: boolean, const: false}
+            activation_allowed: {type: boolean, const: false}
+            reason_code: {type: string, const: NON_HOMOLOGATED_SYNTHETIC_PARAMETERS}
