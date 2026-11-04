@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace LibreSign\Pricing\Tests\Http;
 
+use LibreSign\Pricing\Controller\SimulationController;
+use LibreSign\Pricing\Domain\SimulationEngine;
+use LibreSign\Pricing\Infrastructure\SyntheticCatalog;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Request;
 
 final class SimulationHttpTest extends WebTestCase
 {
@@ -22,9 +26,28 @@ final class SimulationHttpTest extends WebTestCase
         $client->request('POST', '/v1/simulations', server:['HTTP_AUTHORIZATION' => 'Bearer test-only-synthetic-token', 'CONTENT_TYPE' => 'application/json'], content:self::body());
         self::assertResponseIsSuccessful();
         $payload = json_decode((string) $client->getResponse()->getContent(), true, 16, JSON_THROW_ON_ERROR);
-        self::assertSame('195.00', $payload['synthetic_list_price']);
+        self::assertSame('16.00', $payload['synthetic_list_price']);
         self::assertFalse($payload['commercialization']['quote_allowed']);
     }
+    public function testMissingCatalogFailsClosedWithoutLeakingPath(): void
+    {
+        $unavailable = '/nonexistent/private/pricing-configuration.json';
+        $controller = new SimulationController(new SimulationEngine(new SyntheticCatalog($unavailable)));
+        $request = Request::create(
+            '/v1/simulations',
+            'POST',
+            [],
+            [],
+            [],
+            ['HTTP_AUTHORIZATION' => 'Bearer test-only-synthetic-token', 'CONTENT_TYPE' => 'application/json'],
+            self::body(),
+        );
+        $response = $controller($request);
+        self::assertSame(503, $response->getStatusCode());
+        self::assertSame(['error' => 'pricing_catalog_unavailable'], json_decode((string) $response->getContent(), true, 16, JSON_THROW_ON_ERROR));
+        self::assertStringNotContainsString($unavailable, (string) $response->getContent());
+    }
+
     public function testUnauthorizedDenied(): void
     {
         static::createClient()->request('POST', '/v1/simulations', server:['CONTENT_TYPE' => 'application/json'], content:self::body());

@@ -1,23 +1,39 @@
-# Simulations API v1
+# Pricing simulations API (v1)
 
-`POST /v1/simulations`, `Authorization: Bearer <token>`, `Content-Type: application/json`. No database, write API, billing, or WooCommerce integration.
+`POST /v1/simulations` requires `Authorization: Bearer <token>` and `Content-Type: application/json`. It has no database, write API, billing, checkout, or WooCommerce integration.
 
-Request:
+## Example request (purely fictional)
 
 ```json
-{"model":"managed","parameter_version":"synthetic-v1","usage":{"documents":100,"storage_gb":10,"service_hours":2},"candidate_price":"1025.00"}
+{
+    "model": "managed",
+    "parameter_version": "synthetic-v1",
+    "usage": {
+        "documents": 100,
+        "storage_gb": 10,
+        "service_hours": 2
+    },
+    "candidate_price": "25.00"
+}
 ```
 
-`candidate_price` is optional, exact BRL decimal string with at most two places. Usage values must be nonnegative integers within documented limits; use zero documents and storage for `customer_infrastructure`. The response includes synthetic reference price, evaluated price, full/incremental costs, two synthetic tax sensitivities, cooperative residual illustration, provenance SHA256, deterministic fingerprint, formula explanation and `commercialization.quote_allowed=false`, `commercialization.activation_allowed=false`.
+**Every numeric example is artificial** and must not be mistaken for LibreCode costs, market quotations, or approved prices. `candidate_price` is optional, expressed as an exact BRL decimal string (at most two fractional digits), and compares an input with the fictional catalogue; it does not authorize a commercial proposal.
 
-Errors: 400 malformed JSON, 401 missing/invalid bearer token, 413 oversize payload, 415 unsupported media type, 422 invalid or unknown inputs. Do not send this endpoint confidential economic data in the first increment.
+The `usage` quantities are nonnegative integers within the limits described by [OpenAPI](openapi.yaml). For `customer_infrastructure`, document and storage usage must be zero. Set `parameter_version` equal to the version of the explicitly configured external catalogue.
 
-Examples (tax scenario synthetic_a, all BRL):
+## Configuration and privacy
 
-| Model | Usage (docs / GB / hours) | Reference | Incremental contribution | Full-cost margin |
-| --- | --- | --- | --- | --- |
-| cloud | 100 / 10 / 2 | 195.00 | 99.30 | 79.30 |
-| managed | 100 / 10 / 2 | 1025.00 | 484.50 | 304.50 |
-| customer_infrastructure | 0 / 0 / 8 | 2400.00 | 716.00 | 436.00 |
+The server uses `PRICING_CATALOG_PATH` to locate a parameter file **outside source control**. It does not search for a default catalogue and never loads `tests/Fixtures/` without explicit configuration. The only public numerical dataset is a deliberately unrealistic test fixture under `tests/Fixtures/synthetic-v1.json`. Current catalogue validation requires artificial data, `homologated=false`, and `status=SYNTHETIC_ONLY`.
 
-Do not assume these figures are commercial offers, real costs, an approved cooperative allocation policy or current Brazilian tax law. A future WooCommerce bridge must reconcile existing offers before any authority is transferred.
+A successful response contains the fictional reference price, evaluated candidate, cost calculations, two illustrative tax scenarios, cooperative residual illustration, version and SHA-256, formulas, and explicit `parameters.example_only=true`. It always includes `commercialization.quote_allowed=false` and `commercialization.activation_allowed=false`. Any future real-economics integration needs separate authorization, authenticated roles, and review of which cost fields are visible to which consumers.
+
+## Errors
+
+- HTTP 400: malformed JSON
+- HTTP 401: missing or incorrect bearer token
+- HTTP 413: request exceeds maximum size
+- HTTP 415: unsupported media type
+- HTTP 422: invalid input or unknown parameter version
+- HTTP 503: configured catalogue missing or invalid, without filesystem path in the response
+
+Do not pass actual confidential economics to this prototype. Its only purpose is to validate the deterministic calculation contracts independently of the commercial launch.

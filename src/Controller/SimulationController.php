@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace LibreSign\Pricing\Controller;
 
 use LibreSign\Pricing\Domain\InvalidSimulationInput;
+use LibreSign\Pricing\Infrastructure\CatalogUnavailable;
 use LibreSign\Pricing\Domain\SimulationEngine;
 use LibreSign\Pricing\Domain\SimulationInput;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -44,6 +45,9 @@ final readonly class SimulationController
             return new JsonResponse($this->engine->simulate(SimulationInput::fromArray($decoded)), 200, $headers);
         } catch (InvalidSimulationInput $exception) {
             return new JsonResponse(['error' => 'invalid_input', 'detail' => $exception->getMessage()], 422, $headers);
+        } catch (CatalogUnavailable $exception) {
+            // Never expose filesystem paths or any economic configuration in API errors.
+            return new JsonResponse(['error' => 'pricing_catalog_unavailable'], 503, $headers);
         }
     }
 }

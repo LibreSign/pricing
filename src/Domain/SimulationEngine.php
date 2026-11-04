@@ -56,11 +56,24 @@ final readonly class SimulationEngine
         return [
             'engine_version' => self::VERSION,
             'simulation_fingerprint' => $fingerprint,
-            'parameters' => ['version' => $data['version'], 'sha256' => $snapshot['sha256'], 'synthetic' => true, 'homologated' => false],
-            'input' => $normalized, 'currency' => 'BRL', 'billing_basis' => $model['billing_basis'],
-            'synthetic_list_price' => $this->money($price), 'evaluated_price' => $this->money($evaluated),
+            'parameters' => [
+                'version' => $data['version'],
+                'sha256' => $snapshot['sha256'],
+                'synthetic' => true,
+                'homologated' => false,
+                'example_only' => true,
+            ],
+            'input' => $normalized,
+            'currency' => 'BRL',
+            'billing_basis' => $model['billing_basis'],
+            'synthetic_list_price' => $this->money($price),
+            'evaluated_price' => $this->money($evaluated),
             'evaluated_price_source' => $input->candidatePrice === null ? 'synthetic_catalog' : 'candidate_input',
-            'costs' => ['incremental' => $this->money($incremental), 'allocated_common' => $this->money($common), 'full' => $this->money($incremental->plus($common))],
+            'costs' => [
+                'incremental' => $this->money($incremental),
+                'allocated_common' => $this->money($common),
+                'full' => $this->money($incremental->plus($common)),
+            ],
             'tax_scenarios' => $scenarios,
             'explanation' => [
                 'price' => 'base_price + sum(usage_i * synthetic_price_per_i)',
@@ -71,7 +84,11 @@ final readonly class SimulationEngine
                 'rounding' => 'HALF_UP to 2 decimal places at money boundaries',
                 'scope' => 'Illustrative scenarios, not validated tax treatment or approved cooperative distribution',
             ],
-            'commercialization' => ['quote_allowed' => false, 'activation_allowed' => false, 'reason_code' => 'NON_HOMOLOGATED_SYNTHETIC_PARAMETERS'],
+            'commercialization' => [
+                'quote_allowed' => false,
+                'activation_allowed' => false,
+                'reason_code' => 'NON_HOMOLOGATED_SYNTHETIC_PARAMETERS',
+            ],
         ];
     }
     /** @param array<string, mixed> $model
