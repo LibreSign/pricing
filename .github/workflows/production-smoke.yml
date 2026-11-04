@@ -42,4 +42,4 @@ jobs:
           APP_ENV: prod
           APP_SECRET: synthetic-production-smoke-only
           PRICING_API_TOKEN: smoke-test-token
-        run: php tools/smoke-production.php
+        run: php tests/Smoke/production.php

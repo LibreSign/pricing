@@ -52,7 +52,7 @@ composer api:generate
 composer api:check
 ```
 
-The second command regenerates the specification in memory and fails if `docs/openapi.yaml` differs. CI runs it for every pull request. When changing a route, DTO, validation limit, or response contract, update the PHP source first and commit the resulting generated file.
+The Composer scripts invoke the native `nelmio:apidoc:dump` command. The first writes the generated YAML; the second pipes the generated output into `diff` and fails on drift. Licensing for this generated file is recorded in `REUSE.toml`. No custom API generator or PHP lint script is maintained. CI runs the drift check for every pull request. When changing a route, DTO, validation limit, or response contract, update the PHP source first and commit the resulting generated file.
 
 The NelmioApiDocBundle runs only in development and test environments. No interactive documentation UI is enabled on the public service.
 

@@ -12,7 +12,6 @@ $finder = Finder::create()
     ->in([
         __DIR__.'/src',
         __DIR__.'/tests',
-        __DIR__.'/tools',
         __DIR__.'/bin',
     ])
     ->append([

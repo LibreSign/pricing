@@ -25,13 +25,13 @@
         }
     },
     "scripts": {
-        "lint": "@php tools/lint.php",
+        "lint": "php -l bin/console && php -l .php-cs-fixer.dist.php && find config public src tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l",
         "style": "php-cs-fixer fix --dry-run --diff --using-cache=no",
         "style:fix": "php-cs-fixer fix --using-cache=no",
         "analyse": "phpstan analyse --no-progress",
         "test": "phpunit --colors=never",
-        "api:generate": "@php tools/generate-openapi.php",
-        "api:check": "@php tools/generate-openapi.php --check",
+        "api:generate": "APP_ENV=dev APP_SECRET=synthetic-docs-only php bin/console nelmio:apidoc:dump --format=yaml | sed '${/^$/d;}' > docs/openapi.yaml",
+        "api:check": "APP_ENV=dev APP_SECRET=synthetic-docs-only php bin/console nelmio:apidoc:dump --format=yaml | sed '${/^$/d;}' | diff -u docs/openapi.yaml -",
         "check": [
             "@lint",
             "@style",

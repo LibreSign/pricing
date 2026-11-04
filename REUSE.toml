@@ -10,6 +10,7 @@ path = [
     "vendor-bin/**/composer.json",
     "vendor-bin/**/composer.lock",
     "tests/Fixtures/*.json",
+    "docs/openapi.yaml",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 LibreSign contributors"
