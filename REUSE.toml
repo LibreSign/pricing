@@ -1,11 +1,25 @@
 version = 1
+
 [[annotations]]
 path = [
-  ".gitattributes", ".github/CODEOWNERS", ".gitignore",
-  ".php-cs-fixer.dist.php", "README.md", "CONTRIBUTING.md",
-  "SECURITY.md", "composer.json", "composer.lock",
-  "config/**", "docs/**", "phpstan.neon", "phpunit.xml.dist",
-  "public/**", "src/**", "tests/**", "tools/**"
+    ".editorconfig",
+    ".gitattributes",
+    ".github/CODEOWNERS",
+    ".gitignore",
+    ".php-cs-fixer.dist.php",
+    "README.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "composer.json",
+    "composer.lock",
+    "config/**",
+    "docs/**",
+    "phpstan.neon",
+    "phpunit.xml.dist",
+    "public/**",
+    "src/**",
+    "tests/**",
+    "tools/**",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 LibreSign contributors"

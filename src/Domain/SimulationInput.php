@@ -6,7 +6,11 @@ namespace LibreSign\Pricing\Domain;
 
 final readonly class SimulationInput
 {
-    private const MAXIMUMS = ['documents' => 1000000, 'storage_gb' => 100000, 'service_hours' => 10000];
+    private const MAXIMUMS = [
+        'documents' => 1000000,
+        'storage_gb' => 100000,
+        'service_hours' => 10000,
+    ];
     /** @param array<string, int> $usage */
     private function __construct(
         public string $model,
@@ -53,6 +57,11 @@ final readonly class SimulationInput
     /** @return array<string, mixed> */
     public function normalized(): array
     {
-        return ['model' => $this->model, 'parameter_version' => $this->parameterVersion, 'usage' => $this->usage, 'candidate_price' => $this->candidatePrice];
+        return [
+            'model' => $this->model,
+            'parameter_version' => $this->parameterVersion,
+            'usage' => $this->usage,
+            'candidate_price' => $this->candidatePrice,
+        ];
     }
 }
