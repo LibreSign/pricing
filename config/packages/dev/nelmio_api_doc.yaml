@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: 2026 LibreSign contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+nelmio_api_doc:
+  documentation:
+    info:
+      title: LibreSign Pricing Simulation API
+      version: 1.0.0
+      description: Synthetic, non-binding simulations; no approved commercial prices.
+    components:
+      securitySchemes:
+        bearerAuth:
+          type: http
+          scheme: bearer
+    security:
+      - bearerAuth: []
+  areas:
+    path_patterns:
+      - '^/v1/'

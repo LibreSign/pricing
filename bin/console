@@ -1,0 +1,15 @@
+#!/usr/bin/env php
+<?php
+
+// SPDX-FileCopyrightText: 2026 LibreSign contributors
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+declare(strict_types=1);
+
+use LibreSign\Pricing\Kernel;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
+
+require dirname(__DIR__).'/vendor/autoload.php';
+
+$kernel = new Kernel($_SERVER['APP_ENV'] ?? $_ENV['APP_ENV'] ?? 'dev', true);
+exit((new Application($kernel))->run());

@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: 2026 LibreSign contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+name: GitHub Actions lint
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  actionlint:
+    name: GitHub Actions lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Lint all workflows
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.11 .github/workflows/*.yml

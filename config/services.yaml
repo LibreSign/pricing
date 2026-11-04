@@ -1,0 +1,17 @@
+# SPDX-FileCopyrightText: 2026 LibreSign contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+parameters:
+  env(PRICING_CATALOG_PATH): ''
+
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  LibreSign\Pricing\:
+    resource: '../src/'
+    exclude: '../src/Kernel.php'
+
+  LibreSign\Pricing\Infrastructure\SyntheticCatalog:
+    arguments:
+      $filename: '%env(string:PRICING_CATALOG_PATH)%'

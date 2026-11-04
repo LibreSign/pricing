@@ -1,0 +1,17 @@
+# SPDX-FileCopyrightText: 2026 LibreSign contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+version = 1
+
+[[annotations]]
+path = [
+    "composer.json",
+    "composer.lock",
+    "vendor-bin/**/composer.json",
+    "vendor-bin/**/composer.lock",
+    "tests/Fixtures/*.json",
+    "docs/openapi.yaml",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 LibreSign contributors"
+SPDX-License-Identifier = "AGPL-3.0-or-later"

@@ -1,0 +1,215 @@
+openapi: 3.0.0
+info:
+  title: 'LibreSign Pricing Simulation API'
+  description: 'Synthetic, non-binding simulations; no approved commercial prices.'
+  version: 1.0.0
+paths:
+  /v1/simulations:
+    post:
+      tags:
+        - Simulations
+      summary: 'Calculate a fictional, non-binding pricing scenario'
+      operationId: simulatePricing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimulationInput'
+      responses:
+        '200':
+          description: 'Synthetic simulation; never an approved price'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulationResponse'
+        '400':
+          description: 'Malformed JSON'
+        '401':
+          description: 'Missing or invalid authentication'
+        '413':
+          description: 'Request too large'
+        '415':
+          description: 'Unsupported content type'
+        '422':
+          description: 'Invalid input or unknown parameter version'
+        '503':
+          description: 'Synthetic catalog is unavailable'
+components:
+  schemas:
+    SimulationUsage:
+      required:
+        - documents
+        - storage_gb
+        - service_hours
+      properties:
+        documents:
+          type: integer
+          maximum: 1000000
+          minimum: 0
+        storage_gb:
+          type: integer
+          maximum: 100000
+          minimum: 0
+        service_hours:
+          type: integer
+          maximum: 10000
+          minimum: 0
+      type: object
+      additionalProperties: false
+    SimulationInput:
+      required:
+        - model
+        - parameter_version
+        - usage
+      properties:
+        model:
+          type: string
+          enum:
+            - cloud
+            - managed
+            - customer_infrastructure
+        parameter_version:
+          type: string
+          pattern: '^[a-z][a-z0-9-]{0,63}$'
+        usage:
+          $ref: '#/components/schemas/SimulationUsage'
+        candidate_price:
+          type: string
+          pattern: '^(?:0|[1-9][0-9]{0,8})(?:\.[0-9]{1,2})?$'
+          nullable: true
+      type: object
+      additionalProperties: false
+    SimulationResponse:
+      required:
+        - engine_version
+        - simulation_fingerprint
+        - parameters
+        - input
+        - currency
+        - billing_basis
+        - synthetic_list_price
+        - evaluated_price
+        - evaluated_price_source
+        - costs
+        - tax_scenarios
+        - explanation
+        - commercialization
+      properties:
+        engine_version:
+          type: string
+        simulation_fingerprint:
+          type: string
+          pattern: '^[a-f0-9]{64}$'
+        parameters:
+          required:
+            - version
+            - sha256
+            - synthetic
+            - homologated
+            - example_only
+          properties:
+            version:
+              type: string
+            sha256:
+              type: string
+            synthetic:
+              type: boolean
+              enum:
+                - true
+            homologated:
+              type: boolean
+              enum:
+                - false
+            example_only:
+              type: boolean
+              enum:
+                - true
+          type: object
+        input:
+          $ref: '#/components/schemas/SimulationInput'
+        currency:
+          type: string
+          enum:
+            - BRL
+        billing_basis:
+          type: string
+          enum:
+            - monthly
+            - project
+        synthetic_list_price:
+          type: string
+        evaluated_price:
+          type: string
+        evaluated_price_source:
+          type: string
+          enum:
+            - synthetic_catalog
+            - candidate_input
+        costs:
+          type: object
+          additionalProperties:
+            type: string
+        tax_scenarios:
+          type: object
+          additionalProperties:
+            required:
+              - synthetic_tax_rate
+              - tax_amount
+              - incremental_contribution
+              - full_cost_margin
+              - cooperative_residual_potential
+              - incremental_contribution_positive
+              - full_cost_recovered
+            properties:
+              synthetic_tax_rate:
+                type: string
+              tax_amount:
+                type: string
+              incremental_contribution:
+                type: string
+              full_cost_margin:
+                type: string
+              cooperative_residual_potential:
+                type: string
+              incremental_contribution_positive:
+                type: boolean
+              full_cost_recovered:
+                type: boolean
+            type: object
+        explanation:
+          type: object
+          additionalProperties:
+            type: string
+        commercialization:
+          required:
+            - quote_allowed
+            - activation_allowed
+            - reason_code
+          properties:
+            quote_allowed:
+              type: boolean
+              enum:
+                - false
+            activation_allowed:
+              type: boolean
+              enum:
+                - false
+            reason_code:
+              type: string
+              enum:
+                - NON_HOMOLOGATED_SYNTHETIC_PARAMETERS
+          type: object
+      type: object
+      additionalProperties: false
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+security:
+  -
+    bearerAuth: []
+tags:
+  -
+    name: Simulations
+    description: Simulations
