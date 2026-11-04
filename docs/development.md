@@ -56,6 +56,10 @@ The Composer scripts invoke the native `nelmio:apidoc:dump` command. The first w
 
 The NelmioApiDocBundle runs only in development and test environments. No interactive documentation UI is enabled on the public service.
 
+## Containerized homologation
+
+See [the private Docker homologation guide](homologation.md) for the pinned PHP-FPM and Nginx images, synthetic-only Compose secrets, IP rate limits, loopback routing, CI smoke test, and manual SHA-scoped deployment. The public Pricing repository does not configure a reverse proxy for internet exposure or integrate with the existing Nextcloud stack.
+
 ## Economic parameters and boundaries
 
 Only explicitly artificial, non-homologated fixtures are accepted. An absent/invalid catalog yields a sanitized HTTP 503 response; test fixtures are never loaded implicitly.

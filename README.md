@@ -33,6 +33,7 @@ No customer-facing pricing integration is active. Access to sensitive calculatio
 ## Project documentation
 
 - [Architecture and development](docs/development.md)
+- [Private Docker homologation and controlled deployment](docs/homologation.md)
 - [Simulation API](docs/api.md)
 - [Generated OpenAPI specification](docs/openapi.yaml)
 - [Contributing](CONTRIBUTING.md)
