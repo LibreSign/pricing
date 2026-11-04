@@ -22,11 +22,8 @@ envfile="$root/.env.homologation"
 export PRICING_APP_IMAGE="ghcr.io/libresign/pricing-app:sha-$sha"
 export PRICING_WEB_IMAGE="ghcr.io/libresign/pricing-web:sha-$sha"
 
-docker compose --env-file "$envfile" config --quiet
-docker compose --env-file "$envfile" pull app nginx
-docker compose --env-file "$envfile" up -d --no-build --remove-orphans
-
-# Only the host's loopback port is exposed, never a public pricing endpoint.
+# Validate the host-local port before modifying any container state.
+# Length checking prevents integer overflows for untrusted configuration.
 port="$(sed -n 's/^PRICING_HTTP_PORT=//p' "$envfile" | tail -n 1)"
 case "$port" in
     ''|*[!0-9]*)
@@ -34,6 +31,14 @@ case "$port" in
         exit 1
         ;;
 esac
+if [ "${#port}" -gt 5 ] || [ "$port" -lt 1 ] || [ "$port" -gt 65535 ]; then
+    echo "PRICING_HTTP_PORT must be between 1 and 65535" >&2
+    exit 1
+fi
+
+docker compose --env-file "$envfile" config --quiet
+docker compose --env-file "$envfile" pull app nginx
+docker compose --env-file "$envfile" up -d --no-build --remove-orphans
 
 i=0
 while [ "$i" -lt 30 ]; do
@@ -41,8 +46,10 @@ while [ "$i" -lt 30 ]; do
         printf 'Homologation liveness verified for %s\n' "$sha"
         exit 0
     fi
-    sleep 2
     i=$((i + 1))
+    if [ "$i" -lt 30 ]; then
+        sleep 2
+    fi
 done
 
 echo "Health verification failed; review service logs and manually roll back to the prior approved SHA." >&2
