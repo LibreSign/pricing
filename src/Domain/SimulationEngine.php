@@ -1,20 +1,31 @@
 <?php
+
 declare(strict_types=1);
+
 namespace LibreSign\Pricing\Domain;
+
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use LibreSign\Pricing\Infrastructure\SyntheticCatalog;
+
 final readonly class SimulationEngine
 {
     public const VERSION = '1.0.0';
-    public function __construct(private SyntheticCatalog $catalog) {}
+    public function __construct(private SyntheticCatalog $catalog)
+    {
+    }
+    /** @return array<string, mixed> */
     public function simulate(SimulationInput $input): array
     {
         $snapshot = $this->catalog->load();
         $data = $snapshot['data'];
-        if ($input->parameterVersion !== $data['version']) throw new InvalidSimulationInput('Unknown parameter_version.');
+        if ($input->parameterVersion !== $data['version']) {
+            throw new InvalidSimulationInput('Unknown parameter_version.');
+        }
         $model = $data['models'][$input->model] ?? null;
-        if (!is_array($model)) throw new \RuntimeException('Model not configured.');
+        if (!is_array($model)) {
+            throw new \RuntimeException('Model not configured.');
+        }
         $price = $this->calculate($model, $input->usage, 'base_price', 'price_per_');
         $incremental = $this->calculate($model, $input->usage, 'incremental_fixed_cost', 'cost_per_');
         $common = $this->amount($model['allocated_common_cost'] ?? null);
@@ -37,7 +48,9 @@ final readonly class SimulationEngine
                 'full_cost_recovered' => $margin->compareTo(0) >= 0,
             ];
         }
-        if ($scenarios === []) throw new \RuntimeException('Tax scenarios are missing.');
+        if ($scenarios === []) {
+            throw new \RuntimeException('Tax scenarios are missing.');
+        }
         $normalized = $input->normalized();
         $fingerprint = hash('sha256', json_encode(['engine' => self::VERSION, 'catalog_sha256' => $snapshot['sha256'], 'input' => $normalized], JSON_THROW_ON_ERROR));
         return [
@@ -61,6 +74,8 @@ final readonly class SimulationEngine
             'commercialization' => ['quote_allowed' => false, 'activation_allowed' => false, 'reason_code' => 'NON_HOMOLOGATED_SYNTHETIC_PARAMETERS'],
         ];
     }
+    /** @param array<string, mixed> $model
+     *  @param array<string, int> $usage */
     private function calculate(array $model, array $usage, string $base, string $prefix): BigDecimal
     {
         $result = $this->amount($model[$base] ?? null);
@@ -71,15 +86,25 @@ final readonly class SimulationEngine
     }
     private function amount(mixed $value): BigDecimal
     {
-        if (!is_string($value) || !preg_match('/^(?:0|[1-9][0-9]{0,8})(?:\.[0-9]{1,6})?$/D', $value)) throw new \RuntimeException('Invalid synthetic decimal.');
+        if (!is_string($value) || !preg_match('/^(?:0|[1-9][0-9]{0,8})(?:\.[0-9]{1,6})?$/D', $value)) {
+            throw new \RuntimeException('Invalid synthetic decimal.');
+        }
         return BigDecimal::of($value);
     }
     private function rate(mixed $value): BigDecimal
     {
         $rate = $this->amount($value);
-        if ($rate->compareTo(0) < 0 || $rate->compareTo(1) > 0) throw new \RuntimeException('Rate is outside [0,1].');
+        if ($rate->compareTo(0) < 0 || $rate->compareTo(1) > 0) {
+            throw new \RuntimeException('Rate is outside [0,1].');
+        }
         return $rate;
     }
-    private function round(BigDecimal $value): BigDecimal { return $value->toScale(2, RoundingMode::HalfUp); }
-    private function money(BigDecimal $value): string { return (string) $this->round($value); }
+    private function round(BigDecimal $value): BigDecimal
+    {
+        return $value->toScale(2, RoundingMode::HalfUp);
+    }
+    private function money(BigDecimal $value): string
+    {
+        return (string) $this->round($value);
+    }
 }

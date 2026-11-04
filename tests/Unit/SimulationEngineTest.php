@@ -1,11 +1,15 @@
 <?php
+
 declare(strict_types=1);
+
 namespace LibreSign\Pricing\Tests\Unit;
+
 use LibreSign\Pricing\Domain\SimulationEngine;
 use LibreSign\Pricing\Domain\SimulationInput;
 use LibreSign\Pricing\Infrastructure\SyntheticCatalog;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+
 final class SimulationEngineTest extends TestCase
 {
     public static function examples(): iterable
@@ -31,7 +35,7 @@ final class SimulationEngineTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         (new SimulationEngine(new SyntheticCatalog(dirname(__DIR__, 2).'/config/pricing/synthetic-v1.json')))->simulate(
-            SimulationInput::fromArray(['model' => 'cloud', 'parameter_version' => 'unknown', 'usage' => ['documents'=>0, 'storage_gb'=>0,'service_hours'=>0]])
+            SimulationInput::fromArray(['model' => 'cloud', 'parameter_version' => 'unknown', 'usage' => ['documents' => 0, 'storage_gb' => 0,'service_hours' => 0]])
         );
     }
 }

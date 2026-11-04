@@ -1,15 +1,21 @@
 <?php
+
 declare(strict_types=1);
+
 namespace LibreSign\Pricing\Controller;
+
 use LibreSign\Pricing\Domain\InvalidSimulationInput;
 use LibreSign\Pricing\Domain\SimulationEngine;
 use LibreSign\Pricing\Domain\SimulationInput;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+
 final readonly class SimulationController
 {
-    public function __construct(private SimulationEngine $engine) {}
+    public function __construct(private SimulationEngine $engine)
+    {
+    }
     #[Route('/v1/simulations', methods: ['POST'])]
     public function __invoke(Request $request): JsonResponse
     {
@@ -26,7 +32,9 @@ final readonly class SimulationController
         }
         try {
             $decoded = json_decode($request->getContent(), true, 16, JSON_THROW_ON_ERROR);
-            if (!is_array($decoded) || array_is_list($decoded)) throw new InvalidSimulationInput('JSON object required.');
+            if (!is_array($decoded) || array_is_list($decoded)) {
+                throw new InvalidSimulationInput('JSON object required.');
+            }
         } catch (\JsonException $exception) {
             return new JsonResponse(['error' => 'invalid_json'], 400, $headers);
         } catch (InvalidSimulationInput $exception) {

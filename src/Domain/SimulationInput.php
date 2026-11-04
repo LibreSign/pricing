@@ -1,15 +1,21 @@
 <?php
+
 declare(strict_types=1);
+
 namespace LibreSign\Pricing\Domain;
+
 final readonly class SimulationInput
 {
     private const MAXIMUMS = ['documents' => 1000000, 'storage_gb' => 100000, 'service_hours' => 10000];
+    /** @param array<string, int> $usage */
     private function __construct(
         public string $model,
         public string $parameterVersion,
         public array $usage,
         public ?string $candidatePrice,
-    ) {}
+    ) {
+    }
+    /** @param array<string, mixed> $body */
     public static function fromArray(array $body): self
     {
         if (array_diff(array_keys($body), ['model', 'parameter_version', 'usage', 'candidate_price']) !== []) {
@@ -44,6 +50,7 @@ final readonly class SimulationInput
         }
         return new self($model, $version, $usage, $candidate);
     }
+    /** @return array<string, mixed> */
     public function normalized(): array
     {
         return ['model' => $this->model, 'parameter_version' => $this->parameterVersion, 'usage' => $this->usage, 'candidate_price' => $this->candidatePrice];
