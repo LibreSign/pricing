@@ -13,7 +13,9 @@ composer install --no-interaction
 composer check
 ```
 
-Development CLI tools are isolated through `bamarni/composer-bin-plugin`. The root `composer.lock` controls runtime and framework dependencies. PHP-CS-Fixer, PHPUnit, and PHPStan have separate manifests and lockfiles under `vendor-bin/`. A normal Composer install forwards installation to these tools; do not pass `--no-plugins` or `--no-scripts` in CI.
+Development tools are isolated through `bamarni/composer-bin-plugin`. The root `require-dev` contains only the bin plugin and `nelmio/api-doc-bundle`: the former bootstraps the isolated installations, while the latter must remain available to the Symfony kernel as a registered development/test bundle. PHPUnit (including Symfony BrowserKit), PHPStan, and PHP-CS-Fixer have independent manifests and lockfiles under `vendor-bin/`. Optional development dependencies not required by the application are not duplicated in the root manifest. OpenAPI generation invokes Symfony Console directly, without a separate process library.
+
+A normal Composer install forwards installation to the isolated tools; do not pass `--no-plugins` or `--no-scripts` in CI. A production installation with `composer install --no-dev` excludes both root development dependencies and the isolated tooling.
 
 Common checks: `composer lint`, `composer style`, `composer analyse`, `composer test`, `composer api:check`, and `composer audit --locked`.
 
