@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2026 LibreSign contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+.git
+.github
+.env
+.env.*
+!/.env.example
+secrets
+**/secrets
+vendor
+vendor-bin
+var
+tests
+docs
+node_modules
+config/pricing
+**/*.pem
+**/*.key
+**/*.p12
+composer.phar
+phpunit.xml.dist
+.php-cs-fixer.dist.php
+README.md
+CONTRIBUTING.md
+SECURITY.md
+*.log

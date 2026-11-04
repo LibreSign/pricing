@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2026 LibreSign contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Use only for local and CI builds; deployment pulls immutable GHCR images.
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx

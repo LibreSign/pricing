@@ -1,0 +1,77 @@
+# SPDX-FileCopyrightText: 2026 LibreSign contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+name: ${PRICING_COMPOSE_PROJECT:-libresign-pricing-homologation}
+
+services:
+  app:
+    image: ${PRICING_APP_IMAGE:?Pin an app image}
+    restart: unless-stopped
+    environment:
+      APP_ENV: prod
+      APP_DEBUG: '0'
+      APP_SECRET_FILE: /run/secrets/pricing_app_secret
+      PRICING_API_TOKEN_FILE: /run/secrets/pricing_api_token
+      PRICING_CATALOG_PATH: /run/secrets/pricing_catalog
+    secrets:
+      - pricing_app_secret
+      - pricing_api_token
+      - pricing_catalog
+    networks:
+      - backend
+    read_only: true
+    tmpfs:
+      - /app/var:rw,nosuid,size=32m,uid=10001,gid=10001,mode=0700
+      - /tmp:rw,nosuid,noexec,size=16m,uid=10001,gid=10001
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 96
+    mem_limit: 256m
+
+  nginx:
+    image: ${PRICING_WEB_IMAGE:?Pin a web image}
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - '127.0.0.1:${PRICING_HTTP_PORT:-18080}:8080'
+    networks:
+      - backend
+      - ingress
+    read_only: true
+    tmpfs:
+      - /var/run:rw,nosuid,size=4m,uid=101,gid=101,mode=0755
+      - /var/cache/nginx:rw,nosuid,size=16m,uid=101,gid=101,mode=0755
+      - /tmp:rw,nosuid,noexec,size=8m,uid=101,gid=101
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 64m
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:8080/healthz | grep -q '"status":"ok"'
+      interval: 10s
+      timeout: 4s
+      retries: 5
+      start_period: 20s
+
+secrets:
+  pricing_app_secret:
+    file: ${PRICING_APP_SECRET_FILE:?Provide private APP_SECRET file}
+  pricing_api_token:
+    file: ${PRICING_API_TOKEN_FILE:?Provide private API token file}
+  pricing_catalog:
+    file: ${PRICING_CATALOG_FILE:?Provide explicitly selected synthetic catalog}
+
+networks:
+  # PHP can only talk to the dedicated Nginx backend. There is no outbound route.
+  backend:
+    internal: true
+    driver: bridge
+  # Only Nginx joins this bridge, making localhost port forwarding possible.
+  ingress:
+    driver: bridge

@@ -9,6 +9,7 @@
 /.env
 /.env.*
 /private/
+/secrets/
 /config/pricing/
 
 /vendor-bin/**/vendor/
