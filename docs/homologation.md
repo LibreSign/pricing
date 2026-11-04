@@ -21,6 +21,19 @@ The application is PHP 8.5.12 with a pinned base image. The Nginx edge is pinned
 - Use only source and image SHAs that passed the Docker smoke check. Do not deploy a branch-head or mutable `latest` tag.
 - Before first deployment, create a reviewed **homologation** GitHub Environment with required approval and scoped SSH secrets. Never store production SSH credentials in repository secrets or in the source tree. Review whether an external GitHub runner can reach the approved deployment host; if not, use an authorized private deployment runner/relay instead of exposing SSH broadly.
 
+## Verification and maintenance
+
+The repository uses two **complementary** testing layers:
+
+- **Bats** (`bats --tap tests/Shell/*.bats`): deterministic behavior tests for the deploy script, container CI orchestration, HTTP smoke script, PHP entrypoint, and Docker/Compose contract. Deploy tests use temporary files and mocked `docker`, `curl` and `sleep`; they never execute SSH or alter the approved deployment host. The deployment script validates its SHA and port **before** any Docker operation. Negative tests cover failed config, pull, up, exhausted health retries, access controls and cleanup.
+- **Real synthetic Docker smoke** (`sh tests/Container/ci.sh`): builds and runs disposable Docker containers with an isolated Compose project; verifies loopback-only networking, non-root runtime, 401/429 responses and commercial guardrails. Run only on a dedicated development/CI Docker daemon, never on a shared production stack.
+
+The CI runs Bats and ShellCheck as **separate independent workflows**. A passing linter does not substitute for behavior testing.
+
+**Persistence:** no Docker named volumes are needed: this phase has no database or durable application state. The `tmpfs` mounts are intentionally ephemeral and the file-backed Docker secrets are mounted read-only from private host paths. Keep the private secrets in `secrets/`, not in a persistent `volumes/` tree. Introduce a documented `volumes/` structure only if later functionality genuinely requires durable state.
+
+**Dependabot image updates:** `.github/dependabot.yml` has a weekly `package-ecosystem: docker` entry at `directory: /`. Dependabot's Docker file fetcher recognizes filenames containing `Dockerfile`, including both `Dockerfile` and `Dockerfile.nginx`, and its parser supports `FROM image:version@sha256:digest`. A Docker update PR can update the tag and the digest together; the checks must rebuild/test the changed images before any merge. These are **runtime base images**, not the immutable `ghcr.io/libresign/pricing-{app,web}:sha-<main-commit>` application images selected manually for deployment. Verify the first actual Dependabot Docker job under GitHub's Dependency graph after merging the configuration; a syntactically valid configuration alone does not prove the scheduled job has run.
+
 ## Host-local files (operator only)
 
 The deployment directory is `/path/to/private-pricing-deployment`, managed as a separate Compose project. Copy the reviewed `docker-compose.yml` and `deploy/homologation.sh` from the approved revision to that directory. The host's deployment configuration and secrets **must not be committed**.
