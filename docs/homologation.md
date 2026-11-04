@@ -89,7 +89,7 @@ An authorized developer can access the private endpoint using an SSH tunnel thro
 ssh -L 18080:127.0.0.1:18080 "$PRICING_DEPLOY_HOST"
 ```
 
-Then call `http://127.0.0.1:18080/healthz` and the authenticated POST endpoint locally. The current machine may require the established jump host. Never expose `18080` or use a publicly routable hostname as a shortcut.
+Then call `http://127.0.0.1:18080/healthz` and the authenticated POST endpoint locally. Private access routing, if required, must be configured outside this repository. Never expose the local-only port publicly.
 
 ## Rollback and operational boundaries
 
