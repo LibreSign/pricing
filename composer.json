@@ -1,0 +1,31 @@
+{
+  "name": "libresign/pricing",
+  "description": "Deterministic, auditable LibreSign pricing simulations",
+  "type": "project",
+  "license": "AGPL-3.0-or-later",
+  "require": {
+    "php": "^8.5",
+    "brick/math": "^1.0",
+    "symfony/framework-bundle": "^8.1",
+    "symfony/yaml": "^8.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^13.4",
+    "phpstan/phpstan": "^2.3",
+    "friendsofphp/php-cs-fixer": "^3.95",
+    "symfony/browser-kit": "^8.1"
+  },
+  "autoload": {"psr-4": {"LibreSign\\Pricing\\": "src/"}},
+  "autoload-dev": {"psr-4": {"LibreSign\\Pricing\\Tests\\": "tests/"}},
+  "scripts": {
+    "lint": "@php tools/lint.php",
+    "style": "php-cs-fixer fix --dry-run --diff --using-cache=no",
+    "analyse": "phpstan analyse --no-progress",
+    "test": "phpunit",
+    "audit": "composer audit --locked",
+    "check": ["@lint", "@style", "@analyse", "@test", "@audit"]
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "config": {"sort-packages": true}
+}
