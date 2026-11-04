@@ -8,7 +8,8 @@ secret_dir="$(mktemp -d)"
 umask 077
 openssl rand -hex 32 > "$secret_dir/app-secret"
 openssl rand -hex 32 > "$secret_dir/api-token"
-export PRICING_SMOKE_TOKEN="$(cat "$secret_dir/api-token")"
+PRICING_SMOKE_TOKEN="$(cat "$secret_dir/api-token")"
+export PRICING_SMOKE_TOKEN
 
 # In local Docker Compose, file-backed secrets keep the original host UID/GID.
 # Match the non-root PHP UID without making the secret world-readable.
@@ -40,5 +41,8 @@ app_id="$(docker compose -f docker-compose.yml -f docker-compose.build.yml ps -q
 # A non-root PHP process and loopback-only HTTP exposure are hard requirements.
 [ "$(docker inspect "$app_id" --format '{{.Config.User}}')" = '10001:10001' ]
 [ "$(docker inspect "$web_id" --format '{{(index (index .NetworkSettings.Ports "8080/tcp") 0).HostIp}}')" = '127.0.0.1' ]
+[ "$(docker network inspect "${PRICING_COMPOSE_PROJECT}_backend" --format '{{.Internal}}')" = true ]
+[ "$(docker inspect "$app_id" --format '{{len .NetworkSettings.Networks}}')" -eq 1 ]
+[ -z "$(docker port "$app_id" 9000/tcp 2>/dev/null)" ]
 
 sh tests/Container/smoke.sh
