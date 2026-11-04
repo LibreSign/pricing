@@ -1,62 +1,39 @@
+<!-- SPDX-FileCopyrightText: 2026 LibreSign contributors
+     SPDX-License-Identifier: AGPL-3.0-or-later -->
+
 # LibreSign Pricing
 
-A standalone Symfony service for **non-binding, synthetic pricing simulations**. It never writes WooCommerce prices, generates approved quotes, or enables commercial activation.
+**Explainable pricing simulations for LibreSign's commercial models.**
 
-> **All quantities, rates, costs, prices, taxes, and cooperative factors in the test fixture are deliberately invented. They are not LibreCode internal economics, market quotations, or approved price lists.**
+LibreSign Pricing is an independent engine intended to help evaluate the economic sustainability of LibreSign services. It models alternative offers, compares incremental contribution with full-cost recovery, and makes assumptions and results traceable.
 
-## Development
+## Business scope
 
-Requirements: PHP 8.5.12+, Composer 2, and the extensions required by Symfony and PHPUnit. Install from the committed lockfile:
+| Model | Purpose |
+| --- | --- |
+| **LibreSign Cloud** | Evaluate standardized, shared hosting and usage assumptions. |
+| **LibreSign Managed** | Evaluate managed capacity, service commitments, and operating costs. |
+| **LibreSign on customer infrastructure** | Evaluate deployment, integration, consulting, and optional ongoing support. |
 
-```sh
-composer validate --strict
-composer install --no-interaction
-composer check
-```
+The engine distinguishes costs that change with additional business from allocations needed to recover the full cost of operations. It also illustrates tax sensitivities and potential cooperative residuals. These are **simulation outputs**, not automatically approved prices or accounting conclusions.
 
-The runtime reads parameters only from `PRICING_CATALOG_PATH`. **There is no default catalog.** If no path is supplied, the API rejects simulations with HTTP 503; it does not silently fall back to the test fixture.
+## Economic governance
 
-To run a local demonstration only, point the variable explicitly to the fictional fixture in `tests/Fixtures/synthetic-v1.json`:
+- **Explainability:** each result records the applied parameter version and model, formulas, and a reproducible input fingerprint.
+- **Confidentiality:** operational economic parameters belong in private, access-controlled environments, not public source control.
+- **Separation of responsibilities:** WooCommerce remains responsible for existing products, subscriptions, and billing; this engine does not provision accounts or issue invoices.
+- **Approval boundaries:** a simulation does not authorize a quote, deployment, contract, price change, or tax treatment.
 
-```sh
-export APP_ENV=dev
-export APP_SECRET=local-development-secret-only
-export PRICING_API_TOKEN=local-demo-token
-export PRICING_CATALOG_PATH="$(pwd)/tests/Fixtures/synthetic-v1.json"
+## Current maturity
 
-php -S 127.0.0.1:8080 -t public
-```
+This repository contains an **early technical increment with deliberately fictional test data only**. None of the numbers included in its fixtures represent LibreCode internal costs, approved market offers, or current Brazilian tax obligations. The engine refuses to load a catalog implicitly and cannot authorize commercialization.
 
-In a separate terminal:
+No customer-facing pricing integration is active. Access to sensitive calculations must remain restricted until roles, confidentiality controls, independently verified economics, and approval workflows have been implemented and reviewed.
 
-```sh
-curl -sS -X POST http://127.0.0.1:8080/v1/simulations \
-  -H 'Authorization: Bearer local-demo-token' \
-  -H 'Content-Type: application/json' \
-  -d '{"model":"cloud","parameter_version":"synthetic-v1","usage":{"documents":100,"storage_gb":10,"service_hours":2}}'
-```
+## Project documentation
 
-The local fixture is for algorithm tests and demonstration only. Never use it to price a customer.
-
-## Parameter separation
-
-- **Public repository:** PHP source, schemas, documentation, and one explicitly artificial fixture under `tests/Fixtures/`. No operating prices or confidential cost parameters belong here.
-- **Private environment:** the future authorized catalog must be managed outside Git and mounted/read with minimal filesystem privileges. Configure its absolute path via `PRICING_CATALOG_PATH`, not through a tracked PHP or JSON file. Do not commit `.env`, real datasets, invoices, or contracts.
-- **Current guardrail:** this first increment accepts **only catalogs explicitly marked as fictional, synthetic, and not homologated**. Changing files or environment variables cannot authorize commercial use. Support for homologated catalogs and access control will require separately reviewed implementation and approvals.
-- **Reproducibility:** results include the parameter version, SHA-256 of the loaded bytes, and deterministic simulation fingerprint. Those hashes are provenance aids, **not confidentiality controls**.
-
-Run `composer check` after changes. PHPUnit uses a synthetic fixture through `phpunit.xml.dist` and must not depend on private financial data.
-
-## Commercial boundaries
-
-WordPress/WooCommerce, the current storefront, and Nextcloud provisioning remain unaffected and authoritative for existing subscriptions. The simulation engine has no database, ledger, payment, provision, or checkout integration.
-
-Before any transfer of pricing authority, independently reconcile WooCommerce offers, billing periods, currencies, tax configuration, model versions, and economic approvals. Even when a candidate price is supplied, the API responds with `quote_allowed=false` and `activation_allowed=false`.
-
-See [API documentation](docs/api.md) and [OpenAPI](docs/openapi.yaml) for the request and response contracts.
-
-## Security limitations
-
-A single environment-configured bearer token protects this prototype, with no tenant-specific roles, rate limiting, or approved exposure of internal cost breakdowns. **Do not deploy it as an internet-facing service or grant third parties access to simulations containing confidential economics.** The current tax and cooperative calculations are illustrative mathematical scenarios, not accounting or legal conclusions.
-
-License: AGPL-3.0-or-later.
+- [Architecture and development](docs/development.md)
+- [Simulation API](docs/api.md)
+- [Generated OpenAPI specification](docs/openapi.yaml)
+- [Contributing](CONTRIBUTING.md)
+- [Security reporting](SECURITY.md)

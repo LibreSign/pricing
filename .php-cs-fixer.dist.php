@@ -1,5 +1,8 @@
 <?php
 
+// SPDX-FileCopyrightText: 2026 LibreSign contributors
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 declare(strict_types=1);
 
 use PhpCsFixer\Config;
@@ -10,6 +13,7 @@ $finder = Finder::create()
         __DIR__.'/src',
         __DIR__.'/tests',
         __DIR__.'/tools',
+        __DIR__.'/bin',
     ])
     ->append([
         __DIR__.'/.php-cs-fixer.dist.php',

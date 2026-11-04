@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: 2026 LibreSign contributors
+     SPDX-License-Identifier: AGPL-3.0-or-later -->
+
 # Pricing simulations API (v1)
 
 `POST /v1/simulations` requires `Authorization: Bearer <token>` and `Content-Type: application/json`. It has no database, write API, billing, checkout, or WooCommerce integration.

@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: 2026 LibreSign contributors
+     SPDX-License-Identifier: AGPL-3.0-or-later -->
+
 # Security
 
 Do not report vulnerabilities or disclose confidential economics in public GitHub issues. Use the repository's GitHub Security Advisories private reporting when available, or an established private contact channel for LibreSign maintainers.
