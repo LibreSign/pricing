@@ -17,12 +17,14 @@ MOCK
     export FAKE_BAD_USER=''
     export FAKE_BAD_PORT=''
     export FAKE_BAD_NETWORK=''
+    export FAKE_FAIL_PERMISSIONS=''
     : > "$FAKE_DOCKER_CALLS"
     cat > "$WORK/bin/docker" <<'MOCK'
 #!/bin/sh
 printf '%s\n' "$*" >> "$FAKE_DOCKER_CALLS"
 case "$1" in
     run)
+        [ "$FAKE_FAIL_PERMISSIONS" = yes ] && exit 24
         exit 0
         ;;
     compose)
@@ -75,6 +77,14 @@ teardown() {
     [ "$status" -eq 0 ]
     grep -q ' config --quiet' "$FAKE_DOCKER_CALLS"
     grep -q ' build --pull' "$FAKE_DOCKER_CALLS"
+    grep -q '^run --rm --user 0:0 --entrypoint /bin/sh ' "$FAKE_DOCKER_CALLS"
+    grep -q ' pricing-app:ci -c chown 10001:10001 /secrets/' "$FAKE_DOCKER_CALLS"
+    ! grep -q 'busybox:' "$FAKE_DOCKER_CALLS"
+    build_line="$(grep -n ' build --pull' "$FAKE_DOCKER_CALLS" | cut -d: -f1)"
+    permissions_line="$(grep -n '^run ' "$FAKE_DOCKER_CALLS" | cut -d: -f1)"
+    up_line="$(grep -n ' up -d --no-build' "$FAKE_DOCKER_CALLS" | cut -d: -f1)"
+    [ "$build_line" -lt "$permissions_line" ]
+    [ "$permissions_line" -lt "$up_line" ]
     grep -q ' up -d --no-build' "$FAKE_DOCKER_CALLS"
     grep -q 'SMOKE_TEST_CALLED' "$FAKE_DOCKER_CALLS"
     grep -q ' down --remove-orphans' "$FAKE_DOCKER_CALLS"
@@ -86,6 +96,17 @@ teardown() {
     [ "$status" -eq 24 ]
     ! grep -q ' up -d --no-build' "$FAKE_DOCKER_CALLS"
     ! grep -q SMOKE_TEST_CALLED "$FAKE_DOCKER_CALLS"
+    grep -q ' down --remove-orphans' "$FAKE_DOCKER_CALLS"
+}
+
+@test "permission preparation failure prevents service startup and cleans up" {
+    export FAKE_FAIL_PERMISSIONS=yes
+    run sh "$WORK/tests/Container/ci.sh"
+    [ "$status" -eq 24 ]
+    grep -q ' build --pull' "$FAKE_DOCKER_CALLS"
+    grep -q '^run --rm ' "$FAKE_DOCKER_CALLS"
+    ! grep -q ' up -d --no-build' "$FAKE_DOCKER_CALLS"
+    ! grep -q 'SMOKE_TEST_CALLED' "$FAKE_DOCKER_CALLS"
     grep -q ' down --remove-orphans' "$FAKE_DOCKER_CALLS"
 }
 

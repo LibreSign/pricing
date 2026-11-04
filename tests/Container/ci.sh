@@ -11,12 +11,6 @@ openssl rand -hex 32 > "$secret_dir/api-token"
 PRICING_SMOKE_TOKEN="$(cat "$secret_dir/api-token")"
 export PRICING_SMOKE_TOKEN
 
-# In local Docker Compose, file-backed secrets keep the original host UID/GID.
-# Match the non-root PHP UID without making the secret world-readable.
-docker run --rm -v "$secret_dir:/secrets" \
-    busybox:1.37@sha256:a7dbc319b1438115a207e11930dc4bb3e643dcb3ec0bdd694bb36cd8fad289ec \
-    sh -c 'chown 10001:10001 /secrets/* && chmod 0400 /secrets/*' >/dev/null
-
 export PRICING_APP_SECRET_FILE="$secret_dir/app-secret"
 export PRICING_API_TOKEN_FILE="$secret_dir/api-token"
 export PRICING_CATALOG_FILE="$PWD/tests/Fixtures/synthetic-v1.json"
@@ -33,6 +27,15 @@ trap cleanup EXIT HUP INT TERM
 
 docker compose -f docker-compose.yml -f docker-compose.build.yml config --quiet
 docker compose -f docker-compose.yml -f docker-compose.build.yml build --pull
+
+# Reuse the freshly built and pinned PHP image instead of a separate image
+# that Dependabot cannot discover inside a shell script.
+# The helper is disposable, runs only against synthetic CI secrets, and
+# overrides the normal non-root user solely to set restrictive ownership.
+docker run --rm --user 0:0 --entrypoint /bin/sh \
+    -v "$secret_dir:/secrets" "$PRICING_APP_IMAGE" \
+    -c 'chown 10001:10001 /secrets/* && chmod 0400 /secrets/*' >/dev/null
+
 docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --no-build
 
 web_id="$(docker compose -f docker-compose.yml -f docker-compose.build.yml ps -q nginx)"
