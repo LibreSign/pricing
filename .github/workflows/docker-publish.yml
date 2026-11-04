@@ -1,0 +1,66 @@
+# SPDX-FileCopyrightText: 2026 LibreSign contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+name: Docker images
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pricing-docker-publish-main
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish SHA-tagged app and Nginx images
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout reviewed main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Authenticate to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish pricing PHP image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: Dockerfile
+          pull: true
+          push: true
+          tags: ghcr.io/libresign/pricing-app:sha-${{ github.sha }}
+          labels: org.opencontainers.image.source=https://github.com/LibreSign/pricing
+          cache-from: type=gha,scope=pricing-app
+          cache-to: type=gha,mode=max,scope=pricing-app
+          provenance: true
+          sbom: true
+
+      - name: Publish pricing Nginx image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: Dockerfile.nginx
+          pull: true
+          push: true
+          tags: ghcr.io/libresign/pricing-web:sha-${{ github.sha }}
+          labels: org.opencontainers.image.source=https://github.com/LibreSign/pricing
+          cache-from: type=gha,scope=pricing-web
+          cache-to: type=gha,mode=max,scope=pricing-web
+          provenance: true
+          sbom: true
