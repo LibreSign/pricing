@@ -1,5 +1,8 @@
 <?php
 
+// SPDX-FileCopyrightText: 2026 LibreSign contributors
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 declare(strict_types=1);
 
 namespace LibreSign\Pricing\Domain;
@@ -11,6 +14,7 @@ use LibreSign\Pricing\Infrastructure\SyntheticCatalog;
 final readonly class SimulationEngine
 {
     public const VERSION = '1.0.0';
+
     public function __construct(private SyntheticCatalog $catalog)
     {
     }
@@ -26,8 +30,8 @@ final readonly class SimulationEngine
         if (!is_array($model)) {
             throw new \RuntimeException('Model not configured.');
         }
-        $price = $this->calculate($model, $input->usage, 'base_price', 'price_per_');
-        $incremental = $this->calculate($model, $input->usage, 'incremental_fixed_cost', 'cost_per_');
+        $price = $this->calculate($model, $input->usage->toArray(), 'base_price', 'price_per_');
+        $incremental = $this->calculate($model, $input->usage->toArray(), 'incremental_fixed_cost', 'cost_per_');
         $common = $this->amount($model['allocated_common_cost'] ?? null);
         $evaluated = $input->candidatePrice === null ? $price : BigDecimal::of($input->candidatePrice);
         $factor = $this->rate($data['cooperative_residual_factor'] ?? null);
@@ -52,7 +56,11 @@ final readonly class SimulationEngine
             throw new \RuntimeException('Tax scenarios are missing.');
         }
         $normalized = $input->normalized();
-        $fingerprint = hash('sha256', json_encode(['engine' => self::VERSION, 'catalog_sha256' => $snapshot['sha256'], 'input' => $normalized], JSON_THROW_ON_ERROR));
+        $fingerprint = hash('sha256', json_encode([
+            'engine' => self::VERSION,
+            'catalog_sha256' => $snapshot['sha256'],
+            'input' => $normalized,
+        ], JSON_THROW_ON_ERROR));
         return [
             'engine_version' => self::VERSION,
             'simulation_fingerprint' => $fingerprint,
@@ -64,7 +72,7 @@ final readonly class SimulationEngine
                 'example_only' => true,
             ],
             'input' => $normalized,
-            'currency' => 'BRL',
+            'currency' => $data['currency'],
             'billing_basis' => $model['billing_basis'],
             'synthetic_list_price' => $this->money($price),
             'evaluated_price' => $this->money($evaluated),
@@ -91,12 +99,18 @@ final readonly class SimulationEngine
             ],
         ];
     }
-    /** @param array<string, mixed> $model
-     *  @param array<string, int> $usage */
+    /**
+     * @param array<string, mixed> $model
+     * @param array<string, int> $usage
+     */
     private function calculate(array $model, array $usage, string $base, string $prefix): BigDecimal
     {
         $result = $this->amount($model[$base] ?? null);
-        foreach (['documents' => 'document', 'storage_gb' => 'storage_gb', 'service_hours' => 'service_hour'] as $quantity => $unit) {
+        foreach ([
+            'documents' => 'document',
+            'storage_gb' => 'storage_gb',
+            'service_hours' => 'service_hour',
+        ] as $quantity => $unit) {
             $result = $result->plus($this->amount($model[$prefix.$unit] ?? null)->multipliedBy($usage[$quantity]));
         }
         return $this->round($result);

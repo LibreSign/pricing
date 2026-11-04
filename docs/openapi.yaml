@@ -1,76 +1,65 @@
-openapi: 3.1.0
+# SPDX-FileCopyrightText: 2026 LibreSign contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+openapi: 3.0.0
 info:
-  title: LibreSign Pricing Simulation API
+  title: 'LibreSign Pricing Simulation API'
+  description: 'Synthetic, non-binding simulations; no approved commercial prices.'
   version: 1.0.0
-  description: Synthetic, non-homologated simulations only; no commercial authority.
-servers:
-  - url: /
 paths:
   /v1/simulations:
     post:
+      tags:
+        - Simulations
+      summary: 'Calculate a fictional, non-binding pricing scenario'
       operationId: simulatePricing
-      summary: Simulate a synthetic, non-binding price
-      security:
-        - bearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SimulationRequest'
-            examples:
-              cloud:
-                value:
-                  model: cloud
-                  parameter_version: synthetic-v1
-                  usage:
-                    documents: 100
-                    storage_gb: 10
-                    service_hours: 2
-              managed:
-                value:
-                  model: managed
-                  parameter_version: synthetic-v1
-                  usage:
-                    documents: 100
-                    storage_gb: 10
-                    service_hours: 2
-              customer_infrastructure:
-                value:
-                  model: customer_infrastructure
-                  parameter_version: synthetic-v1
-                  usage:
-                    documents: 0
-                    storage_gb: 0
-                    service_hours: 8
+              $ref: '#/components/schemas/SimulationInput'
       responses:
         '200':
-          description: Synthetic, deterministic result without commercial authorization
+          description: 'Synthetic simulation; never an approved price'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SimulationResult'
+                $ref: '#/components/schemas/SimulationResponse'
         '400':
-          description: Malformed JSON
+          description: 'Malformed JSON'
         '401':
-          description: Missing or invalid bearer token
+          description: 'Missing or invalid authentication'
         '413':
-          description: Request exceeds maximum size
+          description: 'Request too large'
         '415':
-          description: Unsupported content type
+          description: 'Unsupported content type'
         '422':
-          description: Input or parameter version rejected
+          description: 'Invalid input or unknown parameter version'
         '503':
-          description: Missing or invalid configured synthetic catalog
+          description: 'Synthetic catalog is unavailable'
 components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
   schemas:
-    SimulationRequest:
+    SimulationUsage:
+      required:
+        - documents
+        - storage_gb
+        - service_hours
+      properties:
+        documents:
+          type: integer
+          maximum: 1000000
+          minimum: 0
+        storage_gb:
+          type: integer
+          maximum: 100000
+          minimum: 0
+        service_hours:
+          type: integer
+          maximum: 10000
+          minimum: 0
       type: object
       additionalProperties: false
+    SimulationInput:
       required:
         - model
         - parameter_version
@@ -84,33 +73,16 @@ components:
             - customer_infrastructure
         parameter_version:
           type: string
-          pattern: ^synthetic-v[1-9][0-9]*$
+          pattern: '^[a-z][a-z0-9-]{0,63}$'
         usage:
-          type: object
-          additionalProperties: false
-          required:
-            - documents
-            - storage_gb
-            - service_hours
-          properties:
-            documents:
-              type: integer
-              minimum: 0
-              maximum: 1000000
-            storage_gb:
-              type: integer
-              minimum: 0
-              maximum: 100000
-            service_hours:
-              type: integer
-              minimum: 0
-              maximum: 10000
+          $ref: '#/components/schemas/SimulationUsage'
         candidate_price:
           type: string
-          pattern: ^(0|[1-9][0-9]{0,8})(\.[0-9]{1,2})?$
-          description: Optional comparison price, never an authorized offer
-    SimulationResult:
+          pattern: '^(?:0|[1-9][0-9]{0,8})(?:\.[0-9]{1,2})?$'
+          nullable: true
       type: object
+      additionalProperties: false
+    SimulationResponse:
       required:
         - engine_version
         - simulation_fingerprint
@@ -130,9 +102,8 @@ components:
           type: string
         simulation_fingerprint:
           type: string
-          pattern: ^[0-9a-f]{64}$
+          pattern: '^[a-f0-9]{64}$'
         parameters:
-          type: object
           required:
             - version
             - sha256
@@ -146,18 +117,23 @@ components:
               type: string
             synthetic:
               type: boolean
-              const: true
+              enum:
+                - true
             homologated:
               type: boolean
-              const: false
+              enum:
+                - false
             example_only:
               type: boolean
-              const: true
+              enum:
+                - true
+          type: object
         input:
-          $ref: '#/components/schemas/SimulationRequest'
+          $ref: '#/components/schemas/SimulationInput'
         currency:
           type: string
-          const: BRL
+          enum:
+            - BRL
         billing_basis:
           type: string
           enum:
@@ -179,7 +155,6 @@ components:
         tax_scenarios:
           type: object
           additionalProperties:
-            type: object
             required:
               - synthetic_tax_rate
               - tax_amount
@@ -203,12 +178,12 @@ components:
                 type: boolean
               full_cost_recovered:
                 type: boolean
+            type: object
         explanation:
           type: object
           additionalProperties:
             type: string
         commercialization:
-          type: object
           required:
             - quote_allowed
             - activation_allowed
@@ -216,10 +191,27 @@ components:
           properties:
             quote_allowed:
               type: boolean
-              const: false
+              enum:
+                - false
             activation_allowed:
               type: boolean
-              const: false
+              enum:
+                - false
             reason_code:
               type: string
-              const: NON_HOMOLOGATED_SYNTHETIC_PARAMETERS
+              enum:
+                - NON_HOMOLOGATED_SYNTHETIC_PARAMETERS
+          type: object
+      type: object
+      additionalProperties: false
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+security:
+  -
+    bearerAuth: []
+tags:
+  -
+    name: Simulations
+    description: Simulations

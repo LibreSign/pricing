@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 LibreSign contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
 framework:
   secret: '%env(APP_SECRET)%'
   http_method_override: false
