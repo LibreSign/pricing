@@ -3,7 +3,7 @@
 
 # Synthetic-only homologation deployment
 
-This procedure prepares a **private, non-commercial** installation of LibreSign Pricing, separate from Nextcloud, WordPress, the accounting system and production economic data.
+This procedure prepares a **private, non-commercial** installation of LibreSign Pricing, isolated from unrelated applications and production data.
 
 ## Design and destination
 
@@ -36,7 +36,7 @@ The CI runs Bats and ShellCheck as **separate independent workflows**. A passing
 
 ## Host-local files (operator only)
 
-The deployment directory is `/path/to/private-pricing-deployment`, managed as a separate Compose project. Copy the reviewed `docker-compose.yml` and `deploy/homologation.sh` from the approved revision to that directory. The host's deployment configuration and secrets **must not be committed**.
+The deployment directory is chosen by authorized operators in a private environment configuration. `/path/to/private-pricing-deployment` below is a **non-operational example**, not a real server path. Copy the reviewed `docker-compose.yml` and `deploy/homologation.sh` from the approved revision to that directory. The host's deployment configuration and secrets **must not be committed**.
 
 Create private files under `/path/to/private-pricing-deployment/secrets` with restrictive permissions:
 
@@ -81,7 +81,7 @@ For an approved SHA, the manual deployment script performs an immutable-image pu
 sh deploy/homologation.sh <40-character-reviewed-main-sha>
 ```
 
-The GitHub **Deploy homologation** workflow is a `workflow_dispatch` that accepts a reviewed main SHA and calls this script over verified SSH. Its Environment requires three variables (`PRICING_DEPLOY_HOST`, `PRICING_DEPLOY_USER`, `PRICING_DEPLOY_PORT`) and two secrets (`PRICING_DEPLOY_SSH_KEY`, `PRICING_DEPLOY_KNOWN_HOSTS`). Do not run it before configuring those values and approvals. It has **no push-triggered deployment**.
+The GitHub **Deploy homologation** workflow is a `workflow_dispatch` that accepts a reviewed main SHA and calls this script over verified SSH. Its Environment requires four variables (`PRICING_DEPLOY_HOST`, `PRICING_DEPLOY_USER`, `PRICING_DEPLOY_PORT`, `PRICING_DEPLOY_SCRIPT`) and two secrets (`PRICING_DEPLOY_SSH_KEY`, `PRICING_DEPLOY_KNOWN_HOSTS`). `PRICING_DEPLOY_SCRIPT` must be the absolute, privately configured path to the audited deployment script; it is not committed in this repository. Do not run it before configuring those values and approvals. It has **no push-triggered deployment**.
 
 An authorized developer can access the private endpoint using an SSH tunnel through the approved access path, for example:
 

@@ -46,6 +46,7 @@ jobs:
           DEPLOY_HOST: ${{ vars.PRICING_DEPLOY_HOST }}
           DEPLOY_USER: ${{ vars.PRICING_DEPLOY_USER }}
           DEPLOY_PORT: ${{ vars.PRICING_DEPLOY_PORT }}
+          DEPLOY_SCRIPT: ${{ vars.PRICING_DEPLOY_SCRIPT }}
           DEPLOY_KEY: ${{ secrets.PRICING_DEPLOY_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.PRICING_DEPLOY_KNOWN_HOSTS }}
         run: |
@@ -54,6 +55,8 @@ jobs:
           : "${DEPLOY_USER:?Configure the restricted deployment user}"
           : "${DEPLOY_KEY:?Configure a restricted SSH identity}"
           : "${KNOWN_HOSTS:?Configure the pinned SSH host key}"
+          : "${DEPLOY_SCRIPT:?Configure the private deploy script path}"
+          [[ "$DEPLOY_SCRIPT" =~ ^/[a-zA-Z0-9_./-]+$ && "$DEPLOY_SCRIPT" != *..* ]]
           port="${DEPLOY_PORT:-22}"
           [[ "$port" =~ ^[0-9]{1,5}$ ]]
           umask 077
@@ -64,4 +67,4 @@ jobs:
             -o UserKnownHostsFile="$RUNNER_TEMP/pricing-known-hosts" \
             -i "$RUNNER_TEMP/pricing-deploy-key" -p "$port" \
             "$DEPLOY_USER@$DEPLOY_HOST" \
-            "sudo -n /path/to/private-pricing-deployment/deploy/homologation.sh '$TARGET_SHA'"
+            "sudo -n '$DEPLOY_SCRIPT' '$TARGET_SHA'"
