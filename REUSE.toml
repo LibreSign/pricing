@@ -1,7 +1,12 @@
 version = 1
-
 [[annotations]]
-path = ["composer.json", "config/pricing/synthetic-v1.json", "phpunit.xml.dist", "phpstan.neon", "README.md", "docs/**", ".gitignore", ".gitattributes"]
+path = [
+  ".gitattributes", ".github/CODEOWNERS", ".gitignore",
+  ".php-cs-fixer.dist.php", "README.md", "CONTRIBUTING.md",
+  "SECURITY.md", "composer.json", "composer.lock",
+  "config/**", "docs/**", "phpstan.neon", "phpunit.xml.dist",
+  "public/**", "src/**", "tests/**", "tools/**"
+]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 LibreSign contributors"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
