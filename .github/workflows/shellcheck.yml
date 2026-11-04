@@ -22,9 +22,8 @@ jobs:
           persist-credentials: false
 
       - name: Analyze deployment and container test scripts
-        run: |
-          docker run --rm -v "$PWD:/mnt:ro" -w /mnt \
-            koalaman/shellcheck:v0.11.0@sha256:61862eba1fcf09a484ebcc6feea46f1782532571a34ed51fedf90dd25f925a8d \
-            -s sh -S warning \
-            deploy/homologation.sh docker/php/entrypoint.sh \
-            tests/Container/ci.sh tests/Container/smoke.sh
+        uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
+        with:
+          severity: warning
+          version: stable
+          check_together: 'yes'

@@ -27,6 +27,19 @@ setup() {
     done
 }
 
+@test "ShellCheck workflow uses a tagged, SHA-pinned Dependabot-managed action" {
+    run grep -E 'uses: ludeeus/action-shellcheck@[a-f0-9]{40} # 2.0.0' "$SOURCE/.github/workflows/shellcheck.yml"
+    [ "$status" -eq 0 ]
+    ! grep -q 'docker run' "$SOURCE/.github/workflows/shellcheck.yml"
+}
+
+@test "Dependabot GitHub Actions ecosystem tracks workflow actions" {
+    run grep -A 4 'package-ecosystem: github-actions' "$SOURCE/.github/dependabot.yml"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"directory: /"* ]]
+    [[ "$output" == *"interval: weekly"* ]]
+}
+
 @test "Dependabot Docker ecosystem scans root Dockerfiles" {
     run grep -A 4 'package-ecosystem: docker' "$SOURCE/.github/dependabot.yml"
     [ "$status" -eq 0 ]
