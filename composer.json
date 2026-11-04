@@ -4,9 +4,10 @@
     "type": "project",
     "license": "AGPL-3.0-or-later",
     "require": {
-        "php": "^8.5",
         "brick/math": "^1.0",
+        "php": "^8.5",
         "symfony/framework-bundle": "^8.1",
+        "symfony/string": "^8.1",
         "symfony/yaml": "^8.1"
     },
     "require-dev": {
