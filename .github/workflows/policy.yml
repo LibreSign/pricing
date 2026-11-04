@@ -1,0 +1,29 @@
+# SPDX-FileCopyrightText: 2026 LibreSign contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+name: Repository policy
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  policy:
+    name: License and workflow security
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check SPDX and workflow security
+        run: |
+          python3 -m venv /tmp/pricing-policy
+          /tmp/pricing-policy/bin/pip install --disable-pip-version-check 'reuse[charset-normalizer]==6.3.0' 'zizmor==1.32.0'
+          /tmp/pricing-policy/bin/reuse lint
+          /tmp/pricing-policy/bin/zizmor .github/workflows/
+          go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.11 .github/workflows/*.yml

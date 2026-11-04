@@ -11,9 +11,26 @@ updates:
       symfony-minor-patch:
         patterns:
           - symfony/*
-        update-types:
-          - minor
-          - patch
+        update-types: [minor, patch]
+
+  - package-ecosystem: composer
+    directory: /vendor-bin/phpunit
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: composer
+    directory: /vendor-bin/phpstan
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: composer
+    directory: /vendor-bin/php-cs-fixer
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
