@@ -1,0 +1,45 @@
+# SPDX-FileCopyrightText: 2026 LibreSign contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+name: Production smoke
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  production:
+    name: Production smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up PHP 8.5
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2.40.0
+        with:
+          php-version: '8.5'
+          extensions: mbstring, dom, xml, xmlwriter
+          tools: composer:v2
+          coverage: none
+
+      - name: Validate supported PHP version
+        run: php -r 'if (PHP_VERSION_ID < 80512) exit(1);'
+      - name: Install without development dependencies
+        run: composer install --no-dev --prefer-dist --no-progress --no-interaction
+
+      - name: Verify production kernel fails closed without private catalog
+        env:
+          APP_ENV: prod
+          APP_SECRET: synthetic-production-smoke-only
+          PRICING_API_TOKEN: smoke-test-token
+        run: php tools/smoke-production.php
