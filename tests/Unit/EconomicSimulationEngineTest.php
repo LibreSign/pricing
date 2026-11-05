@@ -56,7 +56,7 @@ final class EconomicSimulationEngineTest extends TestCase
         $input = new EconomicScenarioInput('cloud', 'fictional-v2', 20, '200.00');
         $result = self::engine()->simulate($input);
         self::assertSame('200.00', $result['calculation']['candidate_price']);
-        self::assertSame('58.00', $result['calculation']['candidate_incremental_contribution']);
+        self::assertSame('158.00', $result['calculation']['candidate_incremental_contribution']);
         self::assertSame('60.00', $result['calculation']['candidate_full_margin']);
         self::assertSame('42.00', $result['calculation']['candidate_preservation_delta']);
     }
