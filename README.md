@@ -26,13 +26,18 @@ The engine distinguishes costs that change with additional business from allocat
 
 ## Current maturity
 
-This repository contains an **early technical increment with deliberately fictional test data only**. None of the numbers included in its fixtures represent LibreCode internal costs, approved market offers, or current Brazilian tax obligations. The engine refuses to load a catalog implicitly and cannot authorize commercialization.
+This repository provides a parameterized economic calculator for the three LibreSign modalities, including an external economic matrix, deterministic result fingerprints, and separately calculated one-time setup costs. The public fixtures are **entirely fictional**: none of their values represent LibreCode expenses, approved prices, or applicable tax rates.
 
-No customer-facing pricing integration is active. Access to sensitive calculations must remain restricted until roles, confidentiality controls, independently verified economics, and approval workflows have been implemented and reviewed.
+A separate, disabled-by-default analyst API and private browser workbench support controlled economic validation. Real parameter files and analyst credentials are loaded **only from privately mounted host configuration**. The workbench never modifies configuration or enables WooCommerce billing, contract activation, or public price publication.
+
+Economic results remain estimates pending governance and data homologation. No customer-facing pricing integration is active.
 
 ## Project documentation
 
 - [Architecture and development](docs/development.md)
+- [Economic matrix contract](docs/economic-matrix.md)
+- [Economic simulation formulas](docs/economic-calculation.md)
+- [Private economic configuration and browser workbench](docs/private-economic-configuration.md)
 - [Private Docker homologation and controlled deployment](docs/homologation.md)
 - [Simulation API](docs/api.md)
 - [Generated OpenAPI specification](docs/openapi.yaml)
