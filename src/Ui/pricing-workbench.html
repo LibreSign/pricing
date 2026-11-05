@@ -1,0 +1,180 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 LibreSign contributors
+     SPDX-License-Identifier: AGPL-3.0-or-later -->
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Simulador econômico · LibreSign Pricing</title>
+  <link rel="stylesheet" href="/internal/pricing-workbench.css">
+  <script src="/internal/pricing-workbench.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-content">
+      <span class="brand">LibreSign <span class="brand-light">/ Pricing</span></span>
+      <span class="header-meta">Área interna · homologação</span>
+    </div>
+  </header>
+
+  <main class="container main-content">
+    <div class="intro">
+      <p class="eyebrow">Ferramenta de apoio à decisão</p>
+      <h1>Simulador de precificação</h1>
+      <p>Compare custos, retorno cooperativista e preços de referência nas três modalidades. A calculadora não altera contratos nem realiza cobranças.</p>
+      <p class="notice"><strong>Importante:</strong> resultados demonstrativos não representam uma proposta comercial aprovada. Os parâmetros são carregados exclusivamente do ambiente privado.</p>
+    </div>
+
+    <section class="panel" aria-labelledby="config-title">
+      <div class="panel-heading">
+        <span class="step">01</span>
+        <div>
+          <h2 id="config-title">Conectar à matriz de parâmetros</h2>
+          <p>Informe a credencial de analista e carregue a versão do catálogo do servidor.</p>
+        </div>
+      </div>
+      <div class="field-row credential-row">
+        <div class="field wide">
+          <label for="analyst-token">Credencial de análise</label>
+          <input id="analyst-token" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="credential-help" placeholder="Credencial do ambiente privado">
+          <small id="credential-help">Mantida apenas nesta página até ser limpa ou fechada. Não é gravada em arquivos ou armazenamento local.</small>
+        </div>
+        <button type="button" class="button primary align-bottom" id="load-matrix">Carregar configuração</button>
+      </div>
+      <dl class="matrix-info" id="matrix-info" hidden>
+        <div><dt>Versão</dt><dd id="matrix-version">—</dd></div>
+        <div><dt>Tipo de dados</dt><dd id="matrix-scope">—</dd></div>
+        <div><dt>Homologação</dt><dd id="matrix-approval">—</dd></div>
+      </dl>
+    </section>
+
+    <section class="panel" aria-labelledby="simulation-title">
+      <div class="panel-heading">
+        <span class="step">02</span>
+        <div>
+          <h2 id="simulation-title">Configurar simulação</h2>
+          <p>Altere apenas os dados do cenário. Custos e premissas permanecem no catálogo externo.</p>
+        </div>
+      </div>
+      <form id="economic-form" novalidate>
+        <fieldset id="simulation-fields" disabled>
+          <div class="field-grid">
+            <div class="field">
+              <label for="model">Modalidade</label>
+              <select id="model" required>
+                <option value="cloud">LibreSign Cloud</option>
+                <option value="managed">LibreSign Managed</option>
+                <option value="customer_infrastructure">Infraestrutura do cliente</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="customers">Clientes que compartilham os custos</label>
+              <input id="customers" type="number" min="1" max="1000000" step="1" value="1" required>
+            </div>
+            <div class="field">
+              <label for="candidate-price">Preço candidato (opcional, R$)</label>
+              <input id="candidate-price" type="text" inputmode="decimal" autocomplete="off" placeholder="Ex.: 250,00" aria-describedby="candidate-help">
+              <small id="candidate-help">Use vírgula ou ponto decimal, sem separador de milhar.</small>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="button primary" id="run-simulation" type="submit">Calcular cenário</button>
+            <button class="button secondary" id="clear-session" type="button">Limpar sessão</button>
+          </div>
+        </fieldset>
+      </form>
+      <p id="feedback" class="feedback" role="status" aria-live="polite">Carregue a configuração para iniciar.</p>
+    </section>
+
+    <section class="panel results" id="results" aria-labelledby="results-title" hidden>
+      <div class="panel-heading">
+        <span class="step">03</span>
+        <div>
+          <h2 id="results-title">Resultados</h2>
+          <p id="result-context">—</p>
+        </div>
+      </div>
+      <div id="incomplete" class="notice" hidden>
+        <strong>Parâmetros incompletos.</strong>
+        <p>A simulação foi bloqueada porque faltam valores que não podem ser presumidos como zero:</p>
+        <ul id="missing-list"></ul>
+      </div>
+      <div id="calculated" hidden>
+        <div class="headline-values">
+          <div class="value-card highlight">
+            <p>Preço de preservação por contrato/período</p>
+            <strong id="preservation-price">—</strong>
+            <small>Considera o benchmark configurado para retorno cooperativista.</small>
+          </div>
+          <div class="value-card">
+            <p>Implantação inicial, cobrada uma única vez</p>
+            <strong id="setup-price">—</strong>
+            <small>Separada da operação recorrente ou manutenção opcional.</small>
+          </div>
+        </div>
+        <div class="detail-grid">
+          <section class="detail-panel">
+            <h3>Composição de custos</h3>
+            <dl class="number-list">
+              <div><dt>Custo de caixa por contrato</dt><dd id="cash-cost">—</dd></div>
+              <div><dt>Custo completo por contrato</dt><dd id="full-cost">—</dd></div>
+              <div><dt>Base de preservação cooperativista</dt><dd id="preservation-cost">—</dd></div>
+              <div><dt>Custo da implantação</dt><dd id="setup-cost">—</dd></div>
+            </dl>
+          </section>
+          <section class="detail-panel">
+            <h3>Referências de preço</h3>
+            <dl class="number-list">
+              <div><dt>Piso incremental ilustrativo</dt><dd id="incremental-floor">—</dd></div>
+              <div><dt>Preço de recuperação integral</dt><dd id="full-price">—</dd></div>
+              <div><dt>Margem configurada</dt><dd id="margin-target">—</dd></div>
+              <div><dt>Ocupação projetada</dt><dd id="utilization">—</dd></div>
+            </dl>
+          </section>
+        </div>
+        <section class="detail-panel candidate" id="candidate-analysis" hidden>
+          <h3>Comparação do preço candidato</h3>
+          <dl class="number-list">
+            <div><dt>Preço informado</dt><dd id="candidate-value">—</dd></div>
+            <div><dt>Contribuição incremental estimada</dt><dd id="candidate-contribution">—</dd></div>
+            <div><dt>Resultado após custo completo</dt><dd id="candidate-margin">—</dd></div>
+            <div><dt>Diferença para a preservação</dt><dd id="candidate-delta">—</dd></div>
+          </dl>
+        </section>
+        <p class="fine-print">Indicadores de simulação econômica. A apuração real da produção cooperativista e a autorização de propostas continuam processos separados.</p>
+      </div>
+      <details class="trace">
+        <summary>Rastreabilidade da simulação</summary>
+        <dl class="trace-details">
+          <div><dt>Conjunto de parâmetros</dt><dd id="trace-set">—</dd></div>
+          <div><dt>Versão</dt><dd id="trace-version">—</dd></div>
+          <div><dt>SHA-256 do arquivo</dt><dd><code id="trace-sha">—</code></dd></div>
+          <div><dt>Impressão digital da simulação</dt><dd><code id="trace-fingerprint">—</code></dd></div>
+          <div><dt>Situação comercial</dt><dd id="trace-approval">—</dd></div>
+        </dl>
+      </details>
+    </section>
+
+    <section class="panel" id="history-panel" aria-labelledby="history-title" hidden>
+      <div class="panel-heading">
+        <span class="step">04</span>
+        <div>
+          <h2 id="history-title">Comparação nesta sessão</h2>
+          <p>Resultados guardados apenas em memória enquanto esta aba permanecer aberta.</p>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Modalidade</th><th>Clientes</th><th>Preservação por período</th><th>Implantação</th></tr></thead>
+          <tbody id="history-rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">LibreSign Pricing · Simulação interna. Nenhuma informação financeira é enviada a serviços de terceiros.</div>
+  </footer>
+</body>
+</html>
