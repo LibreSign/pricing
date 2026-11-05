@@ -58,7 +58,7 @@ The NelmioApiDocBundle runs only in development and test environments. No intera
 
 ## Containerized homologation
 
-See [the private Docker homologation guide](homologation.md) for the pinned PHP-FPM and Nginx images, synthetic-only Compose secrets, IP rate limits, loopback routing, CI smoke test, and manual SHA-scoped deployment. Shell scripts have independent Bats behavior tests under `tests/Shell/`; the deployment test mocks Docker, curl and sleep to prevent remote side effects. Run `bats --tap tests/Shell/*.bats`. ShellCheck remains a separate static-analysis workflow. The public Pricing repository does not configure a reverse proxy for internet exposure or integrate with the existing Nextcloud stack.
+See [the private Docker homologation guide](homologation.md) for the pinned PHP-FPM and Nginx images, synthetic-only Compose secrets, IP rate limits, a private-network-only host override without published ports, CI smoke tests (with their own isolated loopback mapping), and manual SHA-scoped deployment. Shell scripts have independent Bats behavior tests under `tests/Shell/`; the deployment test mocks Docker, curl and sleep to prevent remote side effects. Run `bats --tap tests/Shell/*.bats`. ShellCheck remains a separate static-analysis workflow. The public Pricing repository does not configure a reverse proxy for internet exposure or integrate with the existing Nextcloud stack.
 
 ## Economic parameters and boundaries
 

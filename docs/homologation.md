@@ -7,7 +7,7 @@ This procedure prepares a **private, non-commercial** installation of LibreSign 
 
 ## Design and destination
 
-The deployment location is selected through private infrastructure configuration. The service uses its own Docker Compose project and isolated networks, without joining unrelated services or their datastores. Only the web container joins the ingress bridge and publishes a loopback listener. PHP-FPM never publishes a port.
+The deployment location is selected through private infrastructure configuration. The service uses its own Docker Compose project and isolated networks, without joining unrelated applications or datastores. **Neither Nginx nor PHP-FPM publishes any host port.** Nginx joins an explicitly private API network for authorized service-to-service clients; PHP-FPM stays on the backend network.
 
 The application is PHP 8.5.12 with a pinned base image. The Nginx edge is pinned and rate limits simulation requests by the direct peer IP (30/minute with a burst of 4, concurrent connection cap 2). The application requires a bearer token stored as a Docker secret. Responses remain synthetic and set `quote_allowed=false` and `activation_allowed=false`.
 
@@ -16,7 +16,7 @@ The application is PHP 8.5.12 with a pinned base image. The Nginx edge is pinned
 ## Preflight
 
 - Docker Engine and Compose plugin must be available, and the operator must be authorized to manage only the dedicated Pricing stack.
-- Reserve local port 18080 and check that existing services will not be touched.
+- Verify that the private host-only Compose override removes **all** published host ports and does not attach to any public proxy network. Existing services must remain untouched.
 - Privately verify capacity and connectivity. Do not connect the service to unrelated container networks or storage.
 - Use only source and image SHAs that passed the Docker smoke check. Do not deploy a branch-head or mutable `latest` tag.
 - Before first deployment, create a reviewed **homologation** GitHub Environment with required approval and scoped SSH secrets. Never store production SSH credentials in repository secrets or in the source tree. Review whether an external GitHub runner can reach the approved deployment host; if not, use an authorized private deployment runner/relay instead of exposing SSH broadly.
@@ -36,7 +36,7 @@ The CI runs Bats and ShellCheck as **separate independent workflows**. A passing
 
 ## Host-local files (operator only)
 
-The deployment directory is chosen by authorized operators in a private environment configuration. `/path/to/private-pricing-deployment` below is a **non-operational example**, not a real server path. Copy the reviewed `docker-compose.yml` and `deploy/homologation.sh` from the approved revision to that directory. The host's deployment configuration and secrets **must not be committed**.
+The deployment directory is chosen by authorized operators in a private environment configuration. `/path/to/private-pricing-deployment` below is a **non-operational example**, not a real server path. Copy the reviewed `docker-compose.yml` and `deploy/homologation.sh` from the approved revision to that directory. Create a **host-only `docker-compose.override.yml`** that resets `nginx.ports` with `!reset []`, replaces the Nginx network list with the backend and a dedicated internal-only API network using `!override`, and does not attach to a public reverse proxy. The host's override, deployment configuration, network identifiers, and secrets **must never be committed**.
 
 Create private files under `/path/to/private-pricing-deployment/secrets` with restrictive permissions:
 
@@ -56,7 +56,6 @@ Create a host-local `.env.homologation` with **paths and nonsecret values only**
 
 ```dotenv
 PRICING_COMPOSE_PROJECT=libresign-pricing-homologation
-PRICING_HTTP_PORT=18080
 PRICING_APP_IMAGE=ghcr.io/libresign/pricing-app:sha-<reviewed-main-sha>
 PRICING_WEB_IMAGE=ghcr.io/libresign/pricing-web:sha-<reviewed-main-sha>
 PRICING_APP_SECRET_FILE=/path/to/private-pricing-deployment/secrets/app-secret
@@ -72,7 +71,7 @@ Replace the image SHA placeholders with an actually published, approved SHA. Set
 docker compose --env-file .env.homologation config --quiet
 docker compose --env-file .env.homologation pull
 docker compose --env-file .env.homologation up -d --no-build
-curl --fail --silent http://127.0.0.1:18080/healthz
+docker compose --env-file .env.homologation exec -T nginx wget -qO- http://127.0.0.1:8080/healthz
 ```
 
 For an approved SHA, the manual deployment script performs an immutable-image pull, update and health check:
@@ -83,13 +82,7 @@ sh deploy/homologation.sh <40-character-reviewed-main-sha>
 
 The GitHub **Deploy homologation** workflow is a `workflow_dispatch` that accepts a reviewed main SHA and calls this script over verified SSH. Its Environment requires four variables (`PRICING_DEPLOY_HOST`, `PRICING_DEPLOY_USER`, `PRICING_DEPLOY_PORT`, `PRICING_DEPLOY_SCRIPT`) and two secrets (`PRICING_DEPLOY_SSH_KEY`, `PRICING_DEPLOY_KNOWN_HOSTS`). `PRICING_DEPLOY_SCRIPT` must be the absolute, privately configured path to the audited deployment script; it is not committed in this repository. Do not run it before configuring those values and approvals. It has **no push-triggered deployment**.
 
-An authorized developer can access the private endpoint using an SSH tunnel through the approved access path, for example:
-
-```sh
-ssh -L 18080:127.0.0.1:18080 "$PRICING_DEPLOY_HOST"
-```
-
-Then call `http://127.0.0.1:18080/healthz` and the authenticated POST endpoint locally. Private access routing, if required, must be configured outside this repository. Never expose the local-only port publicly.
+Authorized service clients can call the Nginx API using a private Docker network and its internal service alias with a bearer token. Administrative validation uses `docker compose exec -T nginx` from an approved private access path. **No public DNS, proxy route, SSH port forwarding to the API, or host-published API port is required.** Any future external access requires a separate access-control design and explicit approval.
 
 ## Rollback and operational boundaries
 
