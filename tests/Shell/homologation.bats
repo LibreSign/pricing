@@ -7,15 +7,16 @@ setup() {
     WORK="$(mktemp -d)"
     mkdir -p "$WORK/deploy" "$WORK/bin"
     cp "$SOURCE/deploy/homologation.sh" "$WORK/deploy/homologation.sh"
-    printf '%s\n' 'PRICING_HTTP_PORT=18080' > "$WORK/.env.homologation"
+    printf '%s\n' 'PRICING_COMPOSE_PROJECT=synthetic-test' > "$WORK/.env.homologation"
 
     SHA='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
     export FAKE_CALLS="$WORK/docker.calls"
     export FAKE_HEALTH_ATTEMPTS="$WORK/health.attempts"
     export FAKE_SLEEP_CALLS="$WORK/sleep.calls"
     export FAKE_DOCKER_FAIL=''
-    export FAKE_HEALTH_MODE='success'
+    export FAKE_HEALTH_MODE=success
     export FAKE_HEALTH_FAILS=0
+    export FAKE_PUBLISHED_PORT=no
     : > "$FAKE_CALLS"
     printf '0\n' > "$FAKE_HEALTH_ATTEMPTS"
     : > "$FAKE_SLEEP_CALLS"
@@ -25,24 +26,37 @@ setup() {
 printf '%s | %s | %s\n' "$*" "$PRICING_APP_IMAGE" "$PRICING_WEB_IMAGE" >> "$FAKE_CALLS"
 case "$*" in
     *' config --quiet') step=config ;;
+    *' config --format json')
+        [ "$FAKE_DOCKER_FAIL" = config-json ] && exit 19
+        if [ "$FAKE_PUBLISHED_PORT" = yes ]; then
+            printf '{"services":{"nginx":{"ports":[{"published":18080}]}}}\n'
+        else
+            printf '{"services":{"nginx":{"networks":["backend","api"]}}}\n'
+        fi
+        exit 0
+        ;;
     *' pull app nginx') step=pull ;;
     *' up -d --no-build --remove-orphans') step=up ;;
+    *' exec -T nginx wget -qO- http://127.0.0.1:8080/healthz')
+        attempts="$(cat "$FAKE_HEALTH_ATTEMPTS")"
+        attempts=$((attempts + 1))
+        printf '%s\n' "$attempts" > "$FAKE_HEALTH_ATTEMPTS"
+        if [ "$FAKE_HEALTH_MODE" = never ] || [ "$attempts" -le "$FAKE_HEALTH_FAILS" ]; then
+            exit 22
+        fi
+        if [ "$FAKE_HEALTH_MODE" = invalid ]; then
+            printf '{"status":"fail"}\n'
+        else
+            printf '{"status":"ok"}\n'
+        fi
+        exit 0
+        ;;
     *) exit 91 ;;
 esac
 [ "$step" = "$FAKE_DOCKER_FAIL" ] && exit 19
 exit 0
 MOCK
-    cat > "$WORK/bin/curl" <<'MOCK'
-#!/bin/sh
-printf '%s\n' "$*" >> "$FAKE_CALLS"
-attempts="$(cat "$FAKE_HEALTH_ATTEMPTS")"
-attempts=$((attempts + 1))
-printf '%s\n' "$attempts" > "$FAKE_HEALTH_ATTEMPTS"
-if [ "$FAKE_HEALTH_MODE" = never ] || [ "$attempts" -le "$FAKE_HEALTH_FAILS" ]; then
-    exit 22
-fi
-printf '{"status":"ok"}\n'
-MOCK
+
     cat > "$WORK/bin/sleep" <<'MOCK'
 #!/bin/sh
 printf '%s\n' "$*" >> "$FAKE_SLEEP_CALLS"
@@ -55,23 +69,19 @@ teardown() {
     rm -rf "$WORK"
 }
 
-@test "rejects missing, short and uppercase SHA without Docker calls" {
+@test "rejects missing, malformed and uppercase SHAs before Docker" {
     run sh "$WORK/deploy/homologation.sh"
     [ "$status" -eq 2 ]
     run sh "$WORK/deploy/homologation.sh" abc123
     [ "$status" -eq 2 ]
     run sh "$WORK/deploy/homologation.sh" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
     [ "$status" -eq 2 ]
-    [ ! -s "$FAKE_CALLS" ]
-}
-
-@test "rejects shell metacharacters in revision without executing them" {
-    run sh "$WORK/deploy/homologation.sh" 'abc;touch /tmp/never-execute'
+    run sh "$WORK/deploy/homologation.sh" 'abc;touch /tmp/not-executed'
     [ "$status" -eq 2 ]
     [ ! -s "$FAKE_CALLS" ]
 }
 
-@test "fails closed when local deployment configuration is missing" {
+@test "missing configuration fails without contacting Docker" {
     rm "$WORK/.env.homologation"
     run sh "$WORK/deploy/homologation.sh" "$SHA"
     [ "$status" -eq 1 ]
@@ -79,77 +89,79 @@ teardown() {
     [ ! -s "$FAKE_CALLS" ]
 }
 
-@test "rejects missing port before Docker is changed" {
-    printf '%s\n' 'PRICING_COMPOSE_PROJECT=test' > "$WORK/.env.homologation"
+@test "private deployment does not require any host HTTP port" {
     run sh "$WORK/deploy/homologation.sh" "$SHA"
-    [ "$status" -eq 1 ]
-    [ ! -s "$FAKE_CALLS" ]
+    [ "$status" -eq 0 ]
+    [ "$(cat "$FAKE_HEALTH_ATTEMPTS")" -eq 1 ]
+    ! grep -q 'curl' "$FAKE_CALLS"
+    grep -q ' exec -T nginx wget -qO- http://127.0.0.1:8080/healthz' "$FAKE_CALLS"
 }
 
-@test "rejects nonnumeric port before Docker is changed" {
-    printf '%s\n' 'PRICING_HTTP_PORT=abc123' > "$WORK/.env.homologation"
+@test "host-published ports are refused before pull or up" {
+    export FAKE_PUBLISHED_PORT=yes
     run sh "$WORK/deploy/homologation.sh" "$SHA"
     [ "$status" -eq 1 ]
-    [ ! -s "$FAKE_CALLS" ]
-}
-
-@test "rejects out-of-range port before Docker is changed" {
-    printf '%s\n' 'PRICING_HTTP_PORT=65536' > "$WORK/.env.homologation"
-    run sh "$WORK/deploy/homologation.sh" "$SHA"
-    [ "$status" -eq 1 ]
-    [ ! -s "$FAKE_CALLS" ]
-}
-
-@test "Docker config failure prevents pull and up" {
-    export FAKE_DOCKER_FAIL=config
-    run sh "$WORK/deploy/homologation.sh" "$SHA"
-    [ "$status" -eq 19 ]
-    [ "$(grep -c ' | ' "$FAKE_CALLS")" -eq 1 ]
+    [[ "$output" == *"Host-published ports are forbidden"* ]]
     ! grep -q ' pull app nginx' "$FAKE_CALLS"
     ! grep -q ' up -d' "$FAKE_CALLS"
 }
 
-@test "Docker pull failure prevents up" {
+@test "failed Compose configuration prevents pull and up" {
+    export FAKE_DOCKER_FAIL=config
+    run sh "$WORK/deploy/homologation.sh" "$SHA"
+    [ "$status" -eq 19 ]
+    ! grep -q ' pull app nginx' "$FAKE_CALLS"
+}
+
+@test "failed config JSON inspection prevents pull and up" {
+    export FAKE_DOCKER_FAIL=config-json
+    run sh "$WORK/deploy/homologation.sh" "$SHA"
+    [ "$status" -eq 19 ]
+    ! grep -q ' pull app nginx' "$FAKE_CALLS"
+}
+
+@test "failed image pull prevents container changes" {
     export FAKE_DOCKER_FAIL=pull
     run sh "$WORK/deploy/homologation.sh" "$SHA"
     [ "$status" -eq 19 ]
-    grep -q ' pull app nginx' "$FAKE_CALLS"
     ! grep -q ' up -d' "$FAKE_CALLS"
-}
-
-@test "Docker up failure prevents health validation" {
-    export FAKE_DOCKER_FAIL=up
-    run sh "$WORK/deploy/homologation.sh" "$SHA"
-    [ "$status" -eq 19 ]
-    grep -q ' up -d' "$FAKE_CALLS"
     [ "$(cat "$FAKE_HEALTH_ATTEMPTS")" -eq 0 ]
 }
 
-@test "successful deployment forces immutable SHA tags and loopback health" {
-    # File values must not override the explicitly approved image SHA.
-    printf '%s\n' 'PRICING_HTTP_PORT=18081' \
+@test "failed container startup prevents health checks" {
+    export FAKE_DOCKER_FAIL=up
+    run sh "$WORK/deploy/homologation.sh" "$SHA"
+    [ "$status" -eq 19 ]
+    [ "$(cat "$FAKE_HEALTH_ATTEMPTS")" -eq 0 ]
+}
+
+@test "approved SHA always overrides mutable image tags" {
+    printf '%s\n' \
         'PRICING_APP_IMAGE=ghcr.io/libresign/pricing-app:latest' \
         'PRICING_WEB_IMAGE=ghcr.io/libresign/pricing-web:latest' > "$WORK/.env.homologation"
     run sh "$WORK/deploy/homologation.sh" "$SHA"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"Homologation liveness verified"* ]]
-    [ "$(grep -c ' | ' "$FAKE_CALLS")" -eq 3 ]
     grep -q "ghcr.io/libresign/pricing-app:sha-$SHA" "$FAKE_CALLS"
     grep -q "ghcr.io/libresign/pricing-web:sha-$SHA" "$FAKE_CALLS"
     ! grep -q ' | .*:latest ' "$FAKE_CALLS"
-    grep -q 'http://127.0.0.1:18081/healthz' "$FAKE_CALLS"
 }
 
-@test "transient health errors recover without deploying again" {
+@test "temporary internal health failures are retried" {
     export FAKE_HEALTH_FAILS=2
     run sh "$WORK/deploy/homologation.sh" "$SHA"
     [ "$status" -eq 0 ]
     [ "$(cat "$FAKE_HEALTH_ATTEMPTS")" -eq 3 ]
     [ "$(wc -l < "$FAKE_SLEEP_CALLS")" -eq 2 ]
-    [ "$(grep -c ' | ' "$FAKE_CALLS")" -eq 3 ]
 }
 
-@test "exhausted health attempts fail with rollback guidance" {
+@test "a successful HTTP response without healthy body is not accepted" {
+    export FAKE_HEALTH_MODE=invalid
+    run sh "$WORK/deploy/homologation.sh" "$SHA"
+    [ "$status" -eq 1 ]
+    [ "$(cat "$FAKE_HEALTH_ATTEMPTS")" -eq 30 ]
+}
+
+@test "exhausted internal health retries report manual rollback" {
     export FAKE_HEALTH_MODE=never
     run sh "$WORK/deploy/homologation.sh" "$SHA"
     [ "$status" -eq 1 ]

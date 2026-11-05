@@ -18,31 +18,28 @@ envfile="$root/.env.homologation"
 [ -f "$envfile" ] || { echo "Missing host-local deployment configuration" >&2; exit 1; }
 [ -r "$envfile" ] || { echo "Deployment configuration is not readable" >&2; exit 1; }
 
-# SHA-scoped immutable names: never deploy a moving latest tag.
+# SHA-scoped images; never deploy a mutable latest tag.
 export PRICING_APP_IMAGE="ghcr.io/libresign/pricing-app:sha-$sha"
 export PRICING_WEB_IMAGE="ghcr.io/libresign/pricing-web:sha-$sha"
 
-# Validate the host-local port before modifying any container state.
-# Length checking prevents integer overflows for untrusted configuration.
-port="$(sed -n 's/^PRICING_HTTP_PORT=//p' "$envfile" | tail -n 1)"
-case "$port" in
-    ''|*[!0-9]*)
-        echo "PRICING_HTTP_PORT must be a numeric local port" >&2
-        exit 1
-        ;;
-esac
-if [ "${#port}" -gt 5 ] || [ "$port" -lt 1 ] || [ "$port" -gt 65535 ]; then
-    echo "PRICING_HTTP_PORT must be between 1 and 65535" >&2
+docker compose --env-file "$envfile" config --quiet
+resolved="$(docker compose --env-file "$envfile" config --format json)"
+
+# Refuse to deploy when a host-only override is missing or ineffective.
+# Docker Compose serializes published service ports under a "ports" key.
+if printf '%s\n' "$resolved" | grep -Eq '"ports"[[:space:]]*:'; then
+    echo "Host-published ports are forbidden in private homologation" >&2
     exit 1
 fi
 
-docker compose --env-file "$envfile" config --quiet
 docker compose --env-file "$envfile" pull app nginx
 docker compose --env-file "$envfile" up -d --no-build --remove-orphans
 
+# Probe Nginx from inside its container; no host port or public DNS is needed.
 i=0
 while [ "$i" -lt 30 ]; do
-    if curl -fsS --max-time 3 "http://127.0.0.1:$port/healthz" | grep -q '"status":"ok"'; then
+    if docker compose --env-file "$envfile" exec -T nginx wget -qO- http://127.0.0.1:8080/healthz |
+        grep -q '"status":"ok"'; then
         printf 'Homologation liveness verified for %s\n' "$sha"
         exit 0
     fi
