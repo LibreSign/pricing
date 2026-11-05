@@ -19,24 +19,24 @@ The application is PHP 8.5.12 with a pinned base image. The Nginx edge is pinned
 - Verify that the private host-only Compose override removes **all** published host ports and does not attach to any public proxy network. Existing services must remain untouched.
 - Privately verify capacity and connectivity. Do not connect the service to unrelated container networks or storage.
 - Use only source and image SHAs that passed the Docker smoke check. Do not deploy a branch-head or mutable `latest` tag.
-- Before first deployment, create a reviewed **homologation** GitHub Environment with required approval and scoped SSH secrets. Never store production SSH credentials in repository secrets or in the source tree. Review whether an external GitHub runner can reach the approved deployment host; if not, use an authorized private deployment runner/relay instead of exposing SSH broadly.
+- The private host must have read-only outbound HTTPS access to GitHub's public repository API and GHCR. There are **no incoming deployment ports, GitHub-hosted SSH connections, repository SSH secrets, or self-hosted runners on shared infrastructure**. The private host polls the fully reviewed main pipeline; failures prevent activation.
 
 ## Verification and maintenance
 
 The repository uses two **complementary** testing layers:
 
-- **Bats** (`bats --tap tests/Shell/*.bats`): deterministic behavior tests for the deploy script, container CI orchestration, HTTP smoke script, PHP entrypoint, and Docker/Compose contract. Deploy tests use temporary files and mocked `docker`, `curl` and `sleep`; they never execute SSH or alter the approved deployment host. The deployment script validates its SHA and port **before** any Docker operation. Negative tests cover failed config, pull, up, exhausted health retries, access controls and cleanup.
+- **Bats** (`bats --tap tests/Shell/*.bats`): deterministic behavior tests for the deploy script, the outbound-only GitHub CI poller, container CI orchestration, HTTP smoke script, PHP entrypoint, and Docker/Compose contract. Deploy tests use temporary files and mocked `docker`, `curl` and `sleep`; they never execute SSH or alter the approved deployment host. The deployment script validates its SHA and port **before** any Docker operation. Negative tests cover failed config, pull, up, exhausted health retries, access controls and cleanup.
 - **Real synthetic Docker smoke** (`sh tests/Container/ci.sh`): builds and runs disposable Docker containers with an isolated Compose project; verifies loopback-only networking, non-root runtime, 401/429 responses and commercial guardrails. Run only on a dedicated development/CI Docker daemon, never on a shared production stack.
 
 The CI runs Bats and ShellCheck as **separate independent workflows**. A passing linter does not substitute for behavior testing. The container CI script reuses its just-built PHP image in a disposable root-only helper to set synthetic secret ownership, avoiding a second, independently pinned BusyBox image. ShellCheck runs through a SHA-pinned GitHub Action whose version is tracked by the `github-actions` Dependabot ecosystem. Its analyzer binary follows the upstream `stable` release rather than remaining fixed to a shell-script Docker digest.
 
 **Persistence:** no Docker named volumes are needed: this phase has no database or durable application state. The `tmpfs` mounts are intentionally ephemeral and the file-backed Docker secrets are mounted read-only from private host paths. Keep the private secrets in `secrets/`, not in a persistent `volumes/` tree. Introduce a documented `volumes/` structure only if later functionality genuinely requires durable state.
 
-**Dependabot image updates:** `.github/dependabot.yml` has a weekly `package-ecosystem: docker` entry at `directory: /`. Dependabot's Docker file fetcher recognizes filenames containing `Dockerfile`, including both `Dockerfile` and `Dockerfile.nginx`, and its parser supports `FROM image:version@sha256:digest`. A Docker update PR can update the tag and the digest together; the checks must rebuild/test the changed images before any merge. These are **runtime base images**, not the immutable `ghcr.io/libresign/pricing-{app,web}:sha-<main-commit>` application images selected manually for deployment. Verify the first actual Dependabot Docker job under GitHub's Dependency graph after merging the configuration; a syntactically valid configuration alone does not prove the scheduled job has run.
+**Dependabot image updates:** `.github/dependabot.yml` has a weekly `package-ecosystem: docker` entry at `directory: /`. Dependabot's Docker file fetcher recognizes filenames containing `Dockerfile`, including both `Dockerfile` and `Dockerfile.nginx`, and its parser supports `FROM image:version@sha256:digest`. A Docker update PR can update the tag and the digest together; the checks must rebuild/test the changed images before any merge. These are **runtime base images**, not the immutable `ghcr.io/libresign/pricing-{app,web}:sha-<main-commit>` application images selected by the approved main pipeline for private staging. Verify the first actual Dependabot Docker job under GitHub's Dependency graph after merging the configuration; a syntactically valid configuration alone does not prove the scheduled job has run.
 
 ## Host-local files (operator only)
 
-The deployment directory is chosen by authorized operators in a private environment configuration. `/path/to/private-pricing-deployment` below is a **non-operational example**, not a real server path. Copy the reviewed `docker-compose.yml` and `deploy/homologation.sh` from the approved revision to that directory. Create a **host-only `docker-compose.override.yml`** that resets `nginx.ports` with `!reset []`, replaces the Nginx network list with the backend and a dedicated internal-only API network using `!override`, and does not attach to a public reverse proxy. The host's override, deployment configuration, network identifiers, and secrets **must never be committed**.
+The deployment directory is chosen by authorized operators in a private environment configuration. `/path/to/private-pricing-deployment` below is a **non-operational example**, not a real server path. Copy the reviewed `docker-compose.yml`, `deploy/homologation.sh` and `deploy/poll-homologation.sh` from the approved revision to that directory. Create a **host-only `docker-compose.override.yml`** that resets `nginx.ports` with `!reset []`, replaces the Nginx network list with the backend and a dedicated internal-only API network using `!override`, and does not attach to a public reverse proxy. The host's override, deployment configuration, network identifiers, and secrets **must never be committed**.
 
 Create private files under `/path/to/private-pricing-deployment/secrets` with restrictive permissions:
 
@@ -80,7 +80,21 @@ For an approved SHA, the manual deployment script performs an immutable-image pu
 sh deploy/homologation.sh <40-character-reviewed-main-sha>
 ```
 
-The GitHub **Deploy homologation** workflow is a `workflow_dispatch` that accepts a reviewed main SHA and calls this script over verified SSH. Its Environment requires four variables (`PRICING_DEPLOY_HOST`, `PRICING_DEPLOY_USER`, `PRICING_DEPLOY_PORT`, `PRICING_DEPLOY_SCRIPT`) and two secrets (`PRICING_DEPLOY_SSH_KEY`, `PRICING_DEPLOY_KNOWN_HOSTS`). `PRICING_DEPLOY_SCRIPT` must be the absolute, privately configured path to the audited deployment script; it is not committed in this repository. Do not run it before configuring those values and approvals. It has **no push-triggered deployment**.
+### Automated private staging after green CI
+
+The private host can check the current `main` revision and all **14 required successful push workflows**, including publication of both GHCR images, using outbound public GitHub API requests:
+
+```sh
+sh deploy/poll-homologation.sh
+```
+
+The poller rejects unsigned or DCO-invalid commits, incomplete or failed checks, and unavailable API responses. It locks concurrent polls, checks the current service health and invokes `deploy/homologation.sh` only for an approved revision. No hosted runner, incoming SSH connection, GitHub credential, repository-specific host path or publicly published API port is required.
+
+For continuous delivery to *synthetic-only homologation*, create a **host-private systemd oneshot service** that executes that command as an authorized Docker administrator, plus a timer (for example, `OnBootSec=5min` and `OnUnitActiveSec=15min`). Keep the actual service working directory, account and unit files **outside this repository**. Inspect the journal for failures; API outages leave the previous approved revision running, and a new main revision is retried on the next timer tick. Do not run the poller as part of public pull-request jobs or grant the runner access to the shared host.
+
+The former GitHub-hosted SSH deployment workflow was removed because hosted runners cannot reach the private-only deployment network without introducing an unnecessary ingress path.
+
+To **roll back deliberately**, stop or disable the private polling timer first, then run the manual SHA-pinned deploy script with the previous approved revision; otherwise the next successful poll will advance staging to the latest green `main`.
 
 Authorized service clients can call the Nginx API using a private Docker network and its internal service alias with a bearer token. Administrative validation uses `docker compose exec -T nginx` from an approved private access path. **No public DNS, proxy route, SSH port forwarding to the API, or host-published API port is required.** Any future external access requires a separate access-control design and explicit approval.
 

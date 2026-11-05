@@ -80,9 +80,10 @@ setup() {
     ' >/dev/null
 }
 
-@test "deployment script path comes from a private environment variable" {
-    run grep -F 'DEPLOY_SCRIPT: ${{ vars.PRICING_DEPLOY_SCRIPT }}' "$SOURCE/.github/workflows/deploy-homologation.yml"
+@test "private deployment uses outbound-only polling without hosted SSH secrets" {
+    [ ! -e "$SOURCE/.github/workflows/deploy-homologation.yml" ]
+    [ -s "$SOURCE/deploy/poll-homologation.sh" ]
+    run grep -F 'api.github.com/repos/LibreSign/pricing' "$SOURCE/deploy/poll-homologation.sh"
     [ "$status" -eq 0 ]
-    run grep -F '"sudo -n '\''$DEPLOY_SCRIPT'\'' '\''$TARGET_SHA'\''"' "$SOURCE/.github/workflows/deploy-homologation.yml"
-    [ "$status" -eq 0 ]
+    ! grep -q 'DEPLOY_SSH_KEY' "$SOURCE/deploy/poll-homologation.sh"
 }
