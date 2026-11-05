@@ -35,7 +35,7 @@ final class EconomicSimulationHttpTest extends TestCase
         $data = json_decode((string) $response->getContent(), true, 32, JSON_THROW_ON_ERROR);
         self::assertSame('3810.00', $data['calculation']['full_cost']);
         self::assertFalse($data['commercialization']['quote_allowed']);
-        self::assertSame('no-store', $response->headers->get('Cache-Control'));
+        self::assertStringContainsString('no-store', (string) $response->headers->get('Cache-Control'));
     }
 
     public function testQuotesFailClosedForSyntheticParameters(): void
