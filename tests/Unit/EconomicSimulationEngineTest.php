@@ -9,6 +9,7 @@ namespace LibreSign\Pricing\Tests\Unit;
 
 use LibreSign\Pricing\Domain\EconomicScenarioInput;
 use LibreSign\Pricing\Domain\EconomicSimulationEngine;
+use LibreSign\Pricing\Infrastructure\CatalogUnavailable;
 use LibreSign\Pricing\Infrastructure\EconomicMatrixLoader;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -100,6 +101,25 @@ final class EconomicSimulationEngineTest extends TestCase
             self::assertNull($result['calculation']);
             self::assertContains('simulation.cloud.fixed_pool', $result['missing_parameters']);
             self::assertFalse($result['commercialization']['quote_allowed']);
+        } finally {
+            unlink($path);
+        }
+    }
+
+    public function testMissingRequiredParameterIsAConfigurationError(): void
+    {
+        $data = json_decode((string) file_get_contents(self::fixturePath()), true, 32, JSON_THROW_ON_ERROR);
+        $data['parameters'] = array_values(array_filter(
+            $data['parameters'],
+            static fn (array $item): bool => $item['id'] !== 'simulation.cloud.fixed_pool',
+        ));
+        $path = tempnam(sys_get_temp_dir(), 'pricing-test-');
+        self::assertNotFalse($path);
+        try {
+            file_put_contents($path, json_encode($data, JSON_THROW_ON_ERROR));
+            $this->expectException(CatalogUnavailable::class);
+            (new EconomicSimulationEngine(new EconomicMatrixLoader($path)))
+                ->simulate(new EconomicScenarioInput('cloud', 'fictional-v2', 20, null));
         } finally {
             unlink($path);
         }
