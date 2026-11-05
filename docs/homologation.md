@@ -74,7 +74,7 @@ docker compose --env-file .env.homologation up -d --no-build
 docker compose --env-file .env.homologation exec -T nginx wget -qO- http://127.0.0.1:8080/healthz
 ```
 
-For an approved SHA, the manual deployment script performs an immutable-image pull, update and health check:
+For an approved SHA, the manual deployment script performs an immutable-image pull, update and private-container health check. **Only after success** it atomically pins both images to the deployed SHA in the host-only `.env.homologation` and saves the previous configuration as `.env.homologation.previous`. Failed deployments leave the previous pinned configuration unchanged:
 
 ```sh
 sh deploy/homologation.sh <40-character-reviewed-main-sha>
