@@ -1,0 +1,197 @@
+{
+    "contract_id": "libresign.pricing.economic-parameters",
+    "schema_version": "2.0.0",
+    "parameter_set_id": "fictional-historical-2026",
+    "parameter_set_version": "fictional-v2",
+    "scope": "SYNTHETIC_ONLY",
+    "approval_status": "research_only",
+    "currency": "BRL",
+    "approved_by": null,
+    "approval_reference": null,
+    "effective_from": null,
+    "effective_until": null,
+    "models": {
+        "cloud": {
+            "billing_basis": "monthly",
+            "parameter_prefix": "simulation.cloud"
+        },
+        "managed": {
+            "billing_basis": "monthly",
+            "parameter_prefix": "simulation.managed"
+        },
+        "customer_infrastructure": {
+            "billing_basis": "project_with_optional_recurring",
+            "parameter_prefix": "simulation.customer_infrastructure"
+        }
+    },
+    "parameters": [
+        {
+            "id": "simulation.cloud.fixed_pool",
+            "value": "1600.00",
+            "unit": "BRL/period",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.cloud.variable_unit",
+            "value": "26.00",
+            "unit": "BRL/customer_period",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.cloud.hours_unit",
+            "value": "0.40",
+            "unit": "hours/customer_period",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.cloud.full_hour",
+            "value": "45.00",
+            "unit": "BRL/hour",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.cloud.collective_hour",
+            "value": "90.00",
+            "unit": "BRL/hour",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.cloud.setup_hours",
+            "value": "2.00",
+            "unit": "hour/customer",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.cloud.capacity",
+            "value": "80",
+            "unit": "customer",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.managed.fixed_pool",
+            "value": "3300.00",
+            "unit": "BRL/period",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.managed.variable_unit",
+            "value": "60.00",
+            "unit": "BRL/customer_period",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.managed.hours_unit",
+            "value": "10.00",
+            "unit": "hours/customer_period",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.managed.full_hour",
+            "value": "45.00",
+            "unit": "BRL/hour",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.managed.collective_hour",
+            "value": "90.00",
+            "unit": "BRL/hour",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.managed.setup_hours",
+            "value": "16.00",
+            "unit": "hour/customer",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.managed.capacity",
+            "value": "6",
+            "unit": "customer",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.customer_infrastructure.fixed_pool",
+            "value": "300.00",
+            "unit": "BRL/period",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.customer_infrastructure.variable_unit",
+            "value": "40.00",
+            "unit": "BRL/customer_period",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.customer_infrastructure.hours_unit",
+            "value": "6.00",
+            "unit": "hours/customer_period",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.customer_infrastructure.full_hour",
+            "value": "45.00",
+            "unit": "BRL/hour",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.customer_infrastructure.collective_hour",
+            "value": "90.00",
+            "unit": "BRL/hour",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.customer_infrastructure.setup_hours",
+            "value": "20.00",
+            "unit": "hour/customer",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.customer_infrastructure.capacity",
+            "value": "6",
+            "unit": "customer",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.tax",
+            "value": "0.06",
+            "unit": "fraction",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.default",
+            "value": "0.02",
+            "unit": "fraction",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.target_margin",
+            "value": "0.15",
+            "unit": "fraction",
+            "source": "FICTIONAL_SCENARIO_REPRODUCTION",
+            "approval_status": "not_approved_for_commercial_use"
+        }
+    ]
+}
