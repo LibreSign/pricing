@@ -9,6 +9,7 @@ namespace LibreSign\Pricing\Domain;
 
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
+use LibreSign\Pricing\Infrastructure\CatalogUnavailable;
 use LibreSign\Pricing\Infrastructure\EconomicMatrixLoader;
 
 final readonly class EconomicSimulationEngine
@@ -43,7 +44,11 @@ final readonly class EconomicSimulationEngine
         $values = [];
         $missing = [];
         foreach ($needed as $id => $unit) {
-            $number = $matrix->decimal($id, $unit);
+            try {
+                $number = $matrix->decimal($id, $unit);
+            } catch (\InvalidArgumentException $exception) {
+                throw new CatalogUnavailable('Economic matrix parameter contract mismatch.', 0, $exception);
+            }
             if ($number === null) {
                 $missing[] = $id;
             } else {
