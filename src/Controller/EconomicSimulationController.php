@@ -59,7 +59,7 @@ final readonly class EconomicSimulationController
                 return new JsonResponse(['error' => 'quotes_disabled'], 403, self::RESPONSE_HEADERS);
             }
             $input = $this->parser->parse($request);
-            $result = $this->engine->simulate($input);
+            $result = $this->engine->simulate($input, gmdate('Y-m-d'));
 
             if ($result['status'] !== 'calculated' || !$result['commercialization']['quote_allowed']) {
                 return new JsonResponse(['error' => 'quote_not_approved'], 409, self::RESPONSE_HEADERS);
@@ -69,6 +69,7 @@ final readonly class EconomicSimulationController
             return new JsonResponse([
                 'simulation_fingerprint' => $result['simulation_fingerprint'],
                 'parameter_version' => $result['parameters']['version'],
+                'approval_as_of' => $result['approval_as_of'],
                 'model' => $input->model,
                 'billing_basis' => $result['billing_basis'],
                 'currency' => $result['currency'],

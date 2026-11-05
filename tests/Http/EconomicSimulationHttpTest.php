@@ -115,6 +115,7 @@ final class EconomicSimulationHttpTest extends TestCase
         $payload = json_decode((string) $response->getContent(), true, 32, JSON_THROW_ON_ERROR);
         self::assertSame('5532.47', $payload['service_period_reference_price']);
         self::assertSame('1870.13', $payload['one_time_setup_reference_price']);
+        self::assertSame(gmdate('Y-m-d'), $payload['approval_as_of']);
         self::assertFalse($payload['activation_allowed']);
         self::assertArrayNotHasKey('calculation', $payload);
         self::assertArrayNotHasKey('parameters', $payload);

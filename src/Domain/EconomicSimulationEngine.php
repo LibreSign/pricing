@@ -20,7 +20,7 @@ final readonly class EconomicSimulationEngine
     }
 
     /** @return array<string, mixed> */
-    public function simulate(EconomicScenarioInput $input): array
+    public function simulate(EconomicScenarioInput $input, ?string $approvalDate = null): array
     {
         $matrix = $this->loader->load();
         if ($matrix->version() !== $input->parameterVersion) {
@@ -55,12 +55,14 @@ final readonly class EconomicSimulationEngine
             'engine' => self::VERSION,
             'matrix_sha256' => $matrix->fingerprint(),
             'input' => $input->normalized(),
+            'approval_date' => $approvalDate,
         ], JSON_THROW_ON_ERROR));
         $base = [
             'engine_version' => self::VERSION,
             'simulation_fingerprint' => $fingerprint,
             'parameters' => $metadata,
             'input' => $input->normalized(),
+            'approval_as_of' => $approvalDate,
             'currency' => 'BRL',
             'billing_basis' => $model['billing_basis'],
             'commercialization' => [
@@ -137,7 +139,8 @@ final readonly class EconomicSimulationEngine
             $result['calculation']['candidate_preservation_delta'] = $this->money($net->minus($preservationCost));
         }
 
-        if ($matrix->quoteAllowed(array_keys($needed), gmdate('Y-m-d'))) {
+        // Date-sensitive authorization is opt-in; ordinary simulations stay deterministic.
+        if ($approvalDate !== null && $matrix->quoteAllowed(array_keys($needed), $approvalDate)) {
             $base['commercialization']['quote_allowed'] = true;
             $base['commercialization']['reason_code'] = 'APPROVED_PARAMETER_SET';
         }
