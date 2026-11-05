@@ -21,7 +21,7 @@ Rotating credentials or a parameter snapshot is an operator-controlled action. C
 ## Endpoints
 
 - `POST /v1/economic-simulations` (analyst token): calculates the full scenario, including economic costs, return targets and parameters' version/hash. This endpoint is **confidential**.
-- `POST /v1/economic-quotes` (separate quotes token): returns only a candidate quote amount, model, billing basis, parameter version and simulation fingerprint. It never returns costs, tax rates, return per hour or parameter values. An unapproved or incomplete matrix produces HTTP 409; an unset host enable flag produces HTTP 403.
+- `POST /v1/economic-quotes` (separate quotes token): returns separate one-time setup and service-period reference amounts, model, billing basis, parameter version and simulation fingerprint. It never returns costs, tax rates, return per hour or parameter values. An unapproved or incomplete matrix produces HTTP 409; an unset host enable flag produces HTTP 403.
 - `POST /v1/simulations`: legacy synthetic-only endpoint. Unchanged.
 
 Both economic routes accept the same JSON request shape:

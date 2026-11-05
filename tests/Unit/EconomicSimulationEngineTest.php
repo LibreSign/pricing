@@ -51,6 +51,14 @@ final class EconomicSimulationEngineTest extends TestCase
         self::assertFalse($first['commercialization']['activation_allowed']);
     }
 
+    public function testSetupPriceIsSeparateFromRecurringInfrastructureSupport(): void
+    {
+        $result = self::engine()->simulate(new EconomicScenarioInput('customer_infrastructure', 'fictional-v2', 1, null));
+        self::assertSame('1142.86', $result['calculation']['preservation_price_with_margin']);
+        self::assertSame('1800.00', $result['calculation']['one_time_setup_cost']);
+        self::assertSame('2337.66', $result['calculation']['one_time_setup_preservation_price']);
+    }
+
     public function testCandidatePriceProducesExplainableComparisons(): void
     {
         $input = new EconomicScenarioInput('cloud', 'fictional-v2', 20, '200.00');

@@ -32,6 +32,7 @@ final readonly class EconomicSimulationEngine
             $prefix.'.fixed_pool' => 'BRL/period',
             $prefix.'.variable_unit' => 'BRL/customer_period',
             $prefix.'.hours_unit' => 'hours/customer_period',
+            $prefix.'.setup_hours' => 'hour/customer',
             $prefix.'.full_hour' => 'BRL/hour',
             $prefix.'.collective_hour' => 'BRL/hour',
             $prefix.'.capacity' => 'customer',
@@ -103,6 +104,9 @@ final readonly class EconomicSimulationEngine
         $incrementalFloor = $variable->dividedBy($denominator, 12, RoundingMode::HalfUp);
         $fullPrice = $fullCost->dividedBy($withMargin, 12, RoundingMode::HalfUp);
         $preservationPrice = $preservationCost->dividedBy($withMargin, 12, RoundingMode::HalfUp);
+        $setupHours = $values[$prefix.'.setup_hours'];
+        $setupCost = $setupHours->multipliedBy($collectiveHour);
+        $setupPrice = $setupCost->dividedBy($withMargin, 12, RoundingMode::HalfUp);
 
         $result = [
             'status' => 'calculated',
@@ -114,6 +118,8 @@ final readonly class EconomicSimulationEngine
                 'incremental_floor' => $this->money($incrementalFloor),
                 'full_price_with_margin' => $this->money($fullPrice),
                 'preservation_price_with_margin' => $this->money($preservationPrice),
+                'one_time_setup_cost' => $this->money($setupCost),
+                'one_time_setup_preservation_price' => $this->money($setupPrice),
                 'tax_rate' => (string) $tax,
                 'default_rate' => (string) $badDebt,
                 'margin_target' => (string) $margin,

@@ -72,7 +72,8 @@ final readonly class EconomicSimulationController
                 'model' => $input->model,
                 'billing_basis' => $result['billing_basis'],
                 'currency' => $result['currency'],
-                'candidate_quote_price' => $result['calculation']['preservation_price_with_margin'],
+                'service_period_reference_price' => $result['calculation']['preservation_price_with_margin'],
+                'one_time_setup_reference_price' => $result['calculation']['one_time_setup_preservation_price'],
                 'activation_allowed' => false,
             ], 200, self::RESPONSE_HEADERS);
         } catch (ApiProblem $problem) {

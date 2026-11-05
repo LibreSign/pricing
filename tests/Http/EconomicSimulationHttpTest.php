@@ -113,7 +113,8 @@ final class EconomicSimulationHttpTest extends TestCase
         $response = $controller->quote(self::request('/v1/economic-quotes', 'quotes-'.str_repeat('y', 33)));
         self::assertSame(200, $response->getStatusCode());
         $payload = json_decode((string) $response->getContent(), true, 32, JSON_THROW_ON_ERROR);
-        self::assertSame('5532.47', $payload['candidate_quote_price']);
+        self::assertSame('5532.47', $payload['service_period_reference_price']);
+        self::assertSame('1870.13', $payload['one_time_setup_reference_price']);
         self::assertFalse($payload['activation_allowed']);
         self::assertArrayNotHasKey('calculation', $payload);
         self::assertArrayNotHasKey('parameters', $payload);
