@@ -69,3 +69,15 @@ The screen uses the same `POST /v1/economic-simulations` endpoint as programmati
 Use `tests/Fixtures/economic-historical-synthetic.json` when demonstrating the workbench **without any actual economic data**. This file is intentionally fictional, reproducing three volume scenarios per modality in unit tests. The production image excludes test fixtures, so mount a private copy explicitly when testing with them.
 
 The workbench has no parameter editor, import of confidential spreadsheets, history database or price publication action. Its session comparison table exists only in memory. In a private real-economics trial, each analyst is responsible for handling and clearing results; avoid browser extensions or screen sharing that could disclose those values. Never use an internet-facing endpoint as a substitute for internal authentication.
+
+### Quick fictional acceptance values
+
+With `tests/Fixtures/economic-historical-synthetic.json` explicitly mounted **in a private test installation** (parameter version `fictional-v2`), the browser must reproduce these non-commercial fixtures:
+
+| Model | Paying customers | Preservation price per contract/period | One-time setup |
+| --- | ---: | ---: | ---: |
+| Cloud | 20 | BRL 184.42 | BRL 233.77 |
+| Managed | 3 | BRL 2,675.32 | BRL 1,870.13 |
+| Customer infrastructure | 1 | BRL 1,142.86 | BRL 2,337.66 |
+
+The margin indicator should display `15%`; every result must have `activation_allowed=false`. A test that changes a JSON cost while retaining the same version should change the SHA-256/fingerprint and display a warning to reload the matrix. Bump the private version after any reviewed change. These numbers are fictional examples, not LibreSign sale prices.

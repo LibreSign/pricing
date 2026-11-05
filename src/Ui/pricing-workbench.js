@@ -45,6 +45,17 @@
     return String(value).replace(".", ",");
   }
 
+  function fractionPercent(value) {
+    const raw = String(value);
+    if (!/^(?:0|1)(?:\.[0-9]{1,8})?$/.test(raw)) return decimal(raw) + " (fração)";
+    const parts = raw.split(".");
+    if (parts[0] === "1") return "100%";
+    const digits = (parts[1] || "").padEnd(8, "0");
+    const whole = String(Number(digits.slice(0, 2)));
+    const tail = digits.slice(2).replace(/0+$/, "");
+    return whole + (tail ? "," + tail : "") + "%";
+  }
+
   function candidatePrice(raw) {
     const trimmed = raw.trim();
     if (!trimmed) return null;
@@ -183,7 +194,7 @@
     setText("setup-cost", money(calc.one_time_setup_cost));
     setText("incremental-floor", money(calc.incremental_floor));
     setText("full-price", money(calc.full_price_with_margin));
-    setText("margin-target", decimal(calc.margin_target) + " (fração)");
+    setText("margin-target", fractionPercent(calc.margin_target));
     setText("utilization", decimal(calc.utilization_percent) + "%");
     el("candidate-analysis").hidden = calc.candidate_price === undefined;
     if (calc.candidate_price !== undefined) {
