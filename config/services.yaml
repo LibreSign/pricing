@@ -2,6 +2,10 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 parameters:
   env(PRICING_CATALOG_PATH): ''
+  env(PRICING_ECONOMIC_MATRIX_PATH): ''
+  env(PRICING_ECONOMIC_ANALYST_TOKEN_FILE): ''
+  env(PRICING_ECONOMIC_QUOTES_TOKEN_FILE): ''
+  env(PRICING_ECONOMIC_QUOTES_ENABLED): '0'
 
 services:
   _defaults:
@@ -15,3 +19,16 @@ services:
   LibreSign\Pricing\Infrastructure\SyntheticCatalog:
     arguments:
       $filename: '%env(string:PRICING_CATALOG_PATH)%'
+
+  LibreSign\Pricing\Infrastructure\EconomicMatrixLoader:
+    arguments:
+      $filename: '%env(string:PRICING_ECONOMIC_MATRIX_PATH)%'
+
+  LibreSign\Pricing\Http\EconomicBearerAuthenticator:
+    arguments:
+      $analystTokenFile: '%env(string:PRICING_ECONOMIC_ANALYST_TOKEN_FILE)%'
+      $quotesTokenFile: '%env(string:PRICING_ECONOMIC_QUOTES_TOKEN_FILE)%'
+
+  LibreSign\Pricing\Controller\EconomicSimulationController:
+    arguments:
+      $quotesEnabled: '%env(string:PRICING_ECONOMIC_QUOTES_ENABLED)%'
