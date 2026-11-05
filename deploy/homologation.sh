@@ -17,6 +17,11 @@ cd "$root"
 envfile="$root/.env.homologation"
 [ -f "$envfile" ] || { echo "Missing host-local deployment configuration" >&2; exit 1; }
 [ -r "$envfile" ] || { echo "Deployment configuration is not readable" >&2; exit 1; }
+if [ "$(grep -c '^PRICING_APP_IMAGE=' "$envfile")" -ne 1 ] ||
+    [ "$(grep -c '^PRICING_WEB_IMAGE=' "$envfile")" -ne 1 ]; then
+    echo "Both pinned image entries must occur exactly once in private deployment configuration" >&2
+    exit 1
+fi
 
 # SHA-scoped images; never deploy a mutable latest tag.
 export PRICING_APP_IMAGE="ghcr.io/libresign/pricing-app:sha-$sha"
@@ -40,6 +45,20 @@ i=0
 while [ "$i" -lt 30 ]; do
     if docker compose --env-file "$envfile" exec -T nginx wget -qO- http://127.0.0.1:8080/healthz |
         grep -q '"status":"ok"'; then
+        # Only persist an approved image revision after a successful health check.
+        # Use an atomic rename so a later docker compose invocation selects the
+        # same running revision instead of silently rolling back.
+        next_env="$(mktemp "$envfile.next.XXXXXXXX")"
+        trap 'rm -f "$next_env"' 0
+        awk -v app="$PRICING_APP_IMAGE" -v web="$PRICING_WEB_IMAGE" '
+            /^PRICING_APP_IMAGE=/ { print "PRICING_APP_IMAGE=" app; next }
+            /^PRICING_WEB_IMAGE=/ { print "PRICING_WEB_IMAGE=" web; next }
+            { print }
+        ' "$envfile" > "$next_env"
+        chmod 0600 "$next_env"
+        cp -p "$envfile" "$envfile.previous"
+        mv "$next_env" "$envfile"
+        trap - 0
         printf 'Homologation liveness verified for %s\n' "$sha"
         exit 0
     fi

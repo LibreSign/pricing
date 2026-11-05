@@ -7,7 +7,10 @@ setup() {
     WORK="$(mktemp -d)"
     mkdir -p "$WORK/deploy" "$WORK/bin"
     cp "$SOURCE/deploy/homologation.sh" "$WORK/deploy/homologation.sh"
-    printf '%s\n' 'PRICING_COMPOSE_PROJECT=synthetic-test' > "$WORK/.env.homologation"
+    printf '%s\n' 'PRICING_COMPOSE_PROJECT=synthetic-test' \
+        'PRICING_APP_IMAGE=ghcr.io/libresign/pricing-app:sha-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' \
+        'PRICING_WEB_IMAGE=ghcr.io/libresign/pricing-web:sha-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' > "$WORK/.env.homologation"
+    chmod 0600 "$WORK/.env.homologation"
 
     SHA='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
     export FAKE_CALLS="$WORK/docker.calls"
@@ -120,6 +123,13 @@ teardown() {
     ! grep -q ' pull app nginx' "$FAKE_CALLS"
 }
 
+@test "missing pinned image configuration fails before any Docker operation" {
+    printf '%s\n' 'PRICING_COMPOSE_PROJECT=synthetic-test' > "$WORK/.env.homologation"
+    run sh "$WORK/deploy/homologation.sh" "$SHA"
+    [ "$status" -eq 1 ]
+    [ ! -s "$FAKE_CALLS" ]
+}
+
 @test "failed image pull prevents container changes" {
     export FAKE_DOCKER_FAIL=pull
     run sh "$WORK/deploy/homologation.sh" "$SHA"
@@ -144,6 +154,24 @@ teardown() {
     grep -q "ghcr.io/libresign/pricing-app:sha-$SHA" "$FAKE_CALLS"
     grep -q "ghcr.io/libresign/pricing-web:sha-$SHA" "$FAKE_CALLS"
     ! grep -q ' | .*:latest ' "$FAKE_CALLS"
+}
+
+@test "successful deployment atomically persists both approved image tags" {
+    run sh "$WORK/deploy/homologation.sh" "$SHA"
+    [ "$status" -eq 0 ]
+    grep -qx "PRICING_APP_IMAGE=ghcr.io/libresign/pricing-app:sha-$SHA" "$WORK/.env.homologation"
+    grep -qx "PRICING_WEB_IMAGE=ghcr.io/libresign/pricing-web:sha-$SHA" "$WORK/.env.homologation"
+    grep -q 'sha-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' "$WORK/.env.homologation.previous"
+    [ "$(stat -c '%a' "$WORK/.env.homologation")" = 600 ]
+}
+
+@test "deployment failure leaves previous revision pinned for rollback" {
+    export FAKE_HEALTH_MODE=never
+    run sh "$WORK/deploy/homologation.sh" "$SHA"
+    [ "$status" -eq 1 ]
+    grep -q 'PRICING_APP_IMAGE=.*sha-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' "$WORK/.env.homologation"
+    grep -q 'PRICING_WEB_IMAGE=.*sha-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' "$WORK/.env.homologation"
+    [ ! -e "$WORK/.env.homologation.previous" ]
 }
 
 @test "temporary internal health failures are retried" {
