@@ -131,6 +131,11 @@ final readonly class EconomicSimulationEngine
             $result['calculation']['candidate_preservation_delta'] = $this->money($net->minus($preservationCost));
         }
 
+        if ($matrix->quoteAllowed(array_keys($needed), gmdate('Y-m-d'))) {
+            $base['commercialization']['quote_allowed'] = true;
+            $base['commercialization']['reason_code'] = 'APPROVED_PARAMETER_SET';
+        }
+
         return $base + $result;
     }
 
