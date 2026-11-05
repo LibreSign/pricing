@@ -1,0 +1,33 @@
+# SPDX-FileCopyrightText: 2026 LibreSign contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+name: Internal UI check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  syntax:
+    name: Internal UI syntax
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify JavaScript syntax
+        run: node --check src/Ui/pricing-workbench.js
+      - name: Verify referenced local assets exist
+        run: |
+          test -s src/Ui/pricing-workbench.html
+          test -s src/Ui/pricing-workbench.css
+          test -s src/Ui/pricing-workbench.js

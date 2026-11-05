@@ -16,7 +16,7 @@ final readonly class EconomicScenarioInput
         public ?string $candidatePrice,
     ) {
         if (!in_array($this->model, ['cloud', 'managed', 'customer_infrastructure'], true)
-            || preg_match('/^[a-z][a-z0-9-]{0,63}$/D', $this->parameterVersion) !== 1
+            || preg_match('/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/D', $this->parameterVersion) !== 1
             || $this->customers < 1
             || $this->customers > 1000000
             || ($this->candidatePrice !== null
