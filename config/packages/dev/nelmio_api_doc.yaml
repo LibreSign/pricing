@@ -15,4 +15,6 @@ nelmio_api_doc:
       - bearerAuth: []
   areas:
     path_patterns:
-      - '^/v1/'
+      # Private economic routes are deliberately excluded from the public synthetic API spec.
+      - '^/v1/simulations
+
