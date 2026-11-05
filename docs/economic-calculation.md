@@ -12,6 +12,7 @@ For `customers = N`, `fixed_pool = F`, `variable_unit = V`, `hours_unit = h`, `f
 - Cash cost per customer: `F / N + V`.
 - Full-cost basis: `cash_cost + h * C`.
 - Cooperative preservation basis: `cash_cost + h * Q`.
+- One-time setup/implementation price (separate from maintenance): `setup_hours * Q / (1 - t - d - m)`.
 - Incremental floor: `V / (1 - t - d)`. This is not an approved minimum selling price.
 - Full-cost price at target margin: `full_cost / (1 - t - d - m)`.
 - Cooperative preservation price at target margin: `preservation_cost / (1 - t - d - m)`.
@@ -24,4 +25,4 @@ All outputs are rounded HALF_UP at two decimal places. Intermediate divisions re
 
 The nine historical research scenarios (three customer volumes for each modality) are reproduced with a **synthetic-only fixture**. Their values were illustrative, not observed LibreCode economics.
 
-The `customer_infrastructure` scenario has a project-plus-optional-recurring contract basis. A later approved quote must separately express one-time setup and recurring support rather than mislabeling a project fee as a monthly subscription.
+The `customer_infrastructure` scenario has a project-plus-optional-recurring contract basis. Its setup price is **always calculated and reported separately** from optional recurring support; do not mislabel either amount as the other.
