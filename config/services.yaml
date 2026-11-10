@@ -6,6 +6,7 @@ parameters:
   env(PRICING_ECONOMIC_ANALYST_TOKEN_FILE): ''
   env(PRICING_ECONOMIC_QUOTES_TOKEN_FILE): ''
   env(PRICING_ECONOMIC_QUOTES_ENABLED): '0'
+  env(PRICING_WORKBENCH_ENABLED): '0'
 
 services:
   _defaults:
@@ -32,3 +33,7 @@ services:
   LibreSign\Pricing\Controller\EconomicSimulationController:
     arguments:
       $quotesEnabled: '%env(string:PRICING_ECONOMIC_QUOTES_ENABLED)%'
+
+  LibreSign\Pricing\Controller\EconomicWorkbenchController:
+    arguments:
+      $enabled: '%env(string:PRICING_WORKBENCH_ENABLED)%'

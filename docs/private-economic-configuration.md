@@ -50,3 +50,34 @@ A quote price is not a binding contract: `activation_allowed` is always `false`.
 Review the older `economic-parameters.private.review.json` **outside the public repository**. Convert its 39 `parameters` into one versioned matrix and normalize `customer_infra` to `customer_infrastructure`. Remove the duplicated `simulation_assumptions` and `scenario_results` source structures. Keep nulls for unverified quantities and update evidence and units explicitly. The nine fictional scenarios now have their own public test fixture.
 
 No real parameter set, accountant working paper, confidential file path, or approval receipt must be committed. Economic homologation is a human-governed operation distinct from merging PHP code.
+
+## Browser-based validation workbench
+
+An optional, **internal-only** read-only interface is served by Symfony at `GET /internal/pricing-workbench`. The default `PRICING_WORKBENCH_ENABLED=0` returns HTTP 404 for the page and both local assets. An authorized infrastructure operator must deliberately set `PRICING_WORKBENCH_ENABLED=1` in the **private** deployment configuration and make the route reachable only on an authorized HTTPS/internal network.
+
+The screen uses the same `POST /v1/economic-simulations` endpoint as programmatic consumers. `GET /v1/economic-metadata` accepts only the **analyst token** and returns the catalog version, SHA-256, scope, approval status and three model identifiers, not the underlying financial values. The browser sends the analyst token in an Authorization header, keeps it only in the password field during the open tab, and does not use browser storage or third-party scripts. Close/clear the tab after testing.
+
+### Private setup (no real economic values in Git)
+
+1. Integrate and review the calculator PR and this UI PR; validate their CI on the final `main` revision.
+2. Use the existing isolated private Docker Compose override. Make sure no host ports are published and no public proxy network is attached. Mount the private economic matrix read-only at a path such as `/run/secrets/pricing_economic_matrix`, and an **independent** analyst token file at a path such as `/run/secrets/pricing_economic_analyst_token`. The token must be at least 32 characters. Never place its bytes or the matrix contents into Compose YAML, environment strings, the repository, container images, CI logs or support tickets.
+3. Set `PRICING_ECONOMIC_MATRIX_PATH` and `PRICING_ECONOMIC_ANALYST_TOKEN_FILE` to those in-container secret paths. Set `PRICING_WORKBENCH_ENABLED=1` **only** in the host-private override. Keep `PRICING_ECONOMIC_QUOTES_ENABLED=0` and do not enable any WooCommerce activation or billing integration.
+4. Open the internal workbench via the approved private HTTPS endpoint at `/internal/pricing-workbench`. Enter the analyst token and select **Carregar configuração**. The server responds with the current parameter version and scope. If the page is 404, verify the private enable flag and network route.
+5. Select Cloud, Managed or infrastructure do cliente; enter the number of paying customers and optionally a candidate price; select **Calcular cenário**. Compare the full-cost, incremental and preservation results, plus one-time setup. Check the matrix SHA-256 and simulation fingerprint when editing the private JSON.
+6. Validate unknown parameters (`null`), negative/invalid inputs, mismatched units, capacity limits and behavior with an expired/not approved snapshot. All quotes/activation must remain blocked when parameters or approvals are missing. To change costs, update only the private JSON, create a new catalog version and repeat the simulation.
+
+Use `tests/Fixtures/economic-historical-synthetic.json` when demonstrating the workbench **without any actual economic data**. This file is intentionally fictional, reproducing three volume scenarios per modality in unit tests. The production image excludes test fixtures, so mount a private copy explicitly when testing with them.
+
+The workbench has no parameter editor, import of confidential spreadsheets, history database or price publication action. Its session comparison table exists only in memory. In a private real-economics trial, each analyst is responsible for handling and clearing results; avoid browser extensions or screen sharing that could disclose those values. Never use an internet-facing endpoint as a substitute for internal authentication.
+
+### Quick fictional acceptance values
+
+With `tests/Fixtures/economic-historical-synthetic.json` explicitly mounted **in a private test installation** (parameter version `fictional-v2`), the browser must reproduce these non-commercial fixtures:
+
+| Model | Paying customers | Preservation price per contract/period | One-time setup |
+| --- | ---: | ---: | ---: |
+| Cloud | 20 | BRL 184.42 | BRL 233.77 |
+| Managed | 3 | BRL 2,675.32 | BRL 1,870.13 |
+| Customer infrastructure | 1 | BRL 1,142.86 | BRL 2,337.66 |
+
+The margin indicator should display `15%`; every result must have `activation_allowed=false`. A test that changes a JSON cost while retaining the same version should change the SHA-256/fingerprint and display a warning to reload the matrix. Bump the private version after any reviewed change. These numbers are fictional examples, not LibreSign sale prices.

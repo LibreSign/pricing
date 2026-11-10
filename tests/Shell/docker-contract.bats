@@ -87,3 +87,23 @@ setup() {
     [ "$status" -eq 0 ]
     ! grep -q 'DEPLOY_SSH_KEY' "$SOURCE/deploy/poll-homologation.sh"
 }
+
+@test "Workbench HTML and assets do not consume the protected API request quota" {
+    run grep -F 'location ~ ^/internal/pricing-workbench' "$SOURCE/docker/nginx/pricing.conf"
+    [ "$status" -eq 0 ]
+
+    local ui_block
+    ui_block="$(awk '
+        /# Static workbench assets do not consume/ { capture=1; next }
+        capture && /^    }/ { exit }
+        capture { print }
+    ' "$SOURCE/docker/nginx/pricing.conf")"
+
+    [[ "$ui_block" == *'limit_except GET { deny all; }'* ]]
+    [[ "$ui_block" == *'limit_conn pricing_connections 2;'* ]]
+    [[ "$ui_block" != *'limit_req zone=pricing_requests'* ]]
+
+    run grep -c 'limit_req zone=pricing_requests burst=4 nodelay;' "$SOURCE/docker/nginx/pricing.conf"
+    [ "$status" -eq 0 ]
+    [ "$output" -eq 3 ]
+}

@@ -23,7 +23,7 @@ final readonly class EconomicParameterMatrix
             || !in_array($document['scope'] ?? null, ['SYNTHETIC_ONLY', 'PRIVATE_ECONOMICS'], true)
             || !in_array($document['approval_status'] ?? null, ['research_only', 'approved_for_quotes'], true)
             || !self::identifier($document['parameter_set_id'] ?? null)
-            || !self::identifier($document['parameter_set_version'] ?? null)
+            || !self::versionIdentifier($document['parameter_set_version'] ?? null)
             || !is_array($document['models'] ?? null)
             || !is_array($document['parameters'] ?? null)
             || !array_is_list($document['parameters'])
@@ -182,6 +182,12 @@ final readonly class EconomicParameterMatrix
     {
         return is_string($value)
             && preg_match('/^[A-Za-z][A-Za-z0-9._-]{0,127}$/D', $value) === 1;
+    }
+
+    private static function versionIdentifier(mixed $value): bool
+    {
+        return is_string($value)
+            && preg_match('/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/D', $value) === 1;
     }
 
     private static function validDate(mixed $value): bool
