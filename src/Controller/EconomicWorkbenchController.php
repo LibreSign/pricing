@@ -27,7 +27,25 @@ final readonly class EconomicWorkbenchController
     #[Route('/internal/pricing-workbench', methods: ['GET'])]
     public function page(): Response
     {
+        return $this->asset('pricing-studio.html', 'text/html; charset=UTF-8', true);
+    }
+
+    #[Route('/internal/pricing-workbench/technical', methods: ['GET'])]
+    public function technical(): Response
+    {
         return $this->asset('pricing-workbench.html', 'text/html; charset=UTF-8', true);
+    }
+
+    #[Route('/internal/pricing-studio.css', methods: ['GET'])]
+    public function studioStylesheet(): Response
+    {
+        return $this->asset('pricing-studio.css', 'text/css; charset=UTF-8');
+    }
+
+    #[Route('/internal/pricing-studio.js', methods: ['GET'])]
+    public function studioScript(): Response
+    {
+        return $this->asset('pricing-studio.js', 'text/javascript; charset=UTF-8');
     }
 
     #[Route('/internal/pricing-workbench.css', methods: ['GET'])]

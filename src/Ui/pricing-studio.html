@@ -1,0 +1,207 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 LibreSign contributors
+     SPDX-License-Identifier: AGPL-3.0-or-later -->
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Estúdio de precificação · LibreSign</title>
+  <link rel="stylesheet" href="/internal/pricing-studio.css">
+  <script src="/internal/pricing-studio.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap brand-row">
+      <div class="wordmark"><span class="brand-mark">L</span> LibreSign <span class="muted">/ Pricing Lab</span></div>
+      <span class="status-tag">Pesquisa interna · não homologada</span>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="hero">
+      <p class="eyebrow">Produto, consumo e sustentabilidade</p>
+      <h1>Quanto cobrar pelo LibreSign?</h1>
+      <p class="lead">Primeiro definimos a oferta e sua franquia. Depois confrontamos o preço com custos de infraestrutura, operação, aquisição e capacidade. Não precisamos saber previamente quantos clientes chegarão: testamos cenários de crescimento.</p>
+      <p class="disclaimer"><strong>Esta é uma ferramenta de pesquisa.</strong> O catálogo demonstrativo usa coeficientes inventados para testar a matemática. Não existe preço aprovado nem integração com cobrança, WooCommerce ou medidor de créditos.</p>
+    </section>
+
+    <section class="surface credentials" aria-labelledby="credentials-title">
+      <div class="section-row">
+        <div><span class="section-number">01</span><h2 id="credentials-title">Dados econômicos</h2><p>Carregue a matriz do servidor para identificar a versão e a origem dos coeficientes.</p></div>
+        <span class="light-label" id="catalog-state">Desconectado</span>
+      </div>
+      <div class="input-row">
+        <div class="form-field fill">
+          <label for="token">Credencial do analista</label>
+          <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="Credencial privada de homologação">
+          <small>Token apenas na memória desta aba. A simulação nunca grava o catálogo.</small>
+        </div>
+        <button id="connect" class="btn primary" type="button">Carregar matriz</button>
+      </div>
+      <div class="source-strip" id="source-strip" hidden>
+        <span><small>Versão</small><strong id="catalog-version">—</strong></span>
+        <span><small>Natureza</small><strong id="catalog-scope">—</strong></span>
+        <span><small>Aprovação</small><strong id="catalog-approval">—</strong></span>
+      </div>
+    </section>
+
+    <form id="studio-form">
+      <fieldset id="studio-fields" disabled>
+        <section class="surface" aria-labelledby="product-title">
+          <div class="section-row"><div><span class="section-number">02</span><h2 id="product-title">O que estamos vendendo?</h2><p>Três modalidades, com a mesma lógica de plataforma quando aplicável.</p></div></div>
+          <div class="product-grid" role="radiogroup" aria-label="Modalidade do LibreSign">
+            <label class="product-option" data-product="cloud">
+              <input type="radio" name="product" value="cloud" checked>
+              <span class="product-head">Cloud <span class="tiny">Self-service</span></span>
+              <span class="product-description">Infraestrutura compartilhada · contratação online · nenhuma hora de suporte incluída.</span>
+            </label>
+            <label class="product-option" data-product="managed">
+              <input type="radio" name="product" value="managed">
+              <span class="product-head">Managed <span class="tiny">Assistido</span></span>
+              <span class="product-description">Mesma plataforma do Cloud, substituindo a hospedagem por capacidade dedicada e somando gestão e suporte.</span>
+            </label>
+            <label class="product-option" data-product="customer_infrastructure">
+              <input type="radio" name="product" value="customer_infrastructure">
+              <span class="product-head">On-premise <span class="tiny">Cliente hospeda</span></span>
+              <span class="product-description">Infraestrutura do contratante · implantação · acesso remoto opcional · manutenção e suporte configuráveis.</span>
+            </label>
+          </div>
+          <div class="explanation" id="product-explanation">
+            Cloud: o custo de infraestrutura é distribuído por cenários de adoção, sem presumir um total conhecido de usuários.
+          </div>
+        </section>
+
+        <section class="surface" aria-labelledby="plan-title">
+          <div class="section-row"><div><span class="section-number">03</span><h2 id="plan-title">Pacote, volume e contratação</h2><p>Valores preenchidos aqui são hipóteses comerciais; a referência econômica vem da matriz.</p></div></div>
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="accounts" id="accounts-label">Assinaturas ativas simuladas</label>
+              <input id="accounts" type="number" min="1" max="1000000" step="1" value="100" required>
+              <small id="accounts-help">Teste 10, 100 ou 1.000 contratos. É uma hipótese de aquisição, não um dado obrigatório do cliente.</small>
+            </div>
+            <div class="form-field">
+              <label for="candidate-monthly">Preço mensal candidato (R$)</label>
+              <input id="candidate-monthly" type="text" inputmode="decimal" autocomplete="off" placeholder="Deixe vazio para calcular o piso">
+              <small>Opcional. Serve para testar uma proposta de preço fixo.</small>
+            </div>
+            <div class="form-field">
+              <label for="annual-discount">Desconto para pagamento anual (%)</label>
+              <input id="annual-discount" type="text" inputmode="decimal" value="0" required>
+              <small>Calcula valor anual total e equivalente mensal, sem inventar descontos.</small>
+            </div>
+          </div>
+
+          <div id="subscription-configuration">
+            <h3>Franquia e recargas <span class="annotation">Unidade de crédito ainda experimental</span></h3>
+            <div class="form-grid">
+              <div class="form-field"><label for="included">Créditos incluídos por mês</label><input id="included" type="number" min="0" max="1000000" step="1" value="100"><small>Franquia mensal; não acumula para o mês seguinte.</small></div>
+              <div class="form-field"><label for="demand">Demanda por cliente no mês (créditos)</label><input id="demand" type="number" min="0" max="1000000" step="1" value="100"><small>Simulação de uso, não previsão de usuários.</small></div>
+              <div class="form-field"><label for="topup-units">Créditos em cada recarga</label><input id="topup-units" type="number" min="1" max="1000000" step="1" value="50"></div>
+              <div class="form-field"><label for="topup-price">Preço de uma recarga (R$)</label><input id="topup-price" type="text" inputmode="decimal" autocomplete="off" placeholder="Ex.: 10,00"></div>
+              <div class="form-field"><label for="take-rate">Compradores de recarga (%)</label><input id="take-rate" type="text" inputmode="decimal" value="0"><small>0% conservador: ao atingir o limite, o consumo não é atendido.</small></div>
+              <div class="form-field"><label for="acquisition-rate">Novos clientes no mês (% da base)</label><input id="acquisition-rate" type="text" inputmode="decimal" value="0"><small>Considera custo de aquisição por novo assinante configurado na matriz.</small></div>
+            </div>
+            <p class="inline-warning"><strong>Atenção ao conceito de crédito:</strong> a unidade faturável não foi homologada. Documentos, signatários, API, TSA e armazenamento podem receber pesos diferentes após medição técnica. A hipótese de medição anterior considerava cada obrigação signatário–documento concluída, sem contar o envelope novamente. Ainda precisa de validação técnica e contratual. Este protótipo simula unidades equivalentes, sem debitar saldo nem gerar faturas.</p>
+          </div>
+
+          <div id="managed-fields" class="conditional" hidden>
+            <h3>Serviços dedicados do Managed</h3>
+            <div class="form-grid">
+              <div class="form-field"><label for="managed-support">Suporte mensal contratado (horas por cliente)</label><input id="managed-support" type="text" value="2" inputmode="decimal"><small>Adicional às horas mínimas de gestão e atualização do ambiente dedicado.</small></div>
+              <div class="form-field"><label for="managed-setup">Implantação adicional (horas)</label><input id="managed-setup" type="text" value="0" inputmode="decimal"></div>
+              <div class="form-field"><label for="managed-setup-price">Preço candidato de implantação (R$)</label><input id="managed-setup-price" type="text" inputmode="decimal" placeholder="Vazio = piso técnico"></div>
+            </div>
+          </div>
+
+          <div id="onprem-fields" class="conditional" hidden>
+            <h3>Condições do ambiente do cliente</h3>
+            <div class="switches">
+              <label class="switch"><input id="include-setup" type="checkbox" checked><span><strong>Implantação pela LibreCode</strong><small>Desmarque quando o cliente já instalou e deseja contratar apenas suporte ou manutenção.</small></span></label>
+              <label class="switch"><input id="maintenance" type="checkbox" checked><span><strong>Manutenção mensal contratada</strong><small>Desmarque para orçamento somente de implantação.</small></span></label>
+              <label class="switch"><input id="remote" type="checkbox"><span><strong>LibreCode autorizada a acessar a infraestrutura</strong><small>Acesso adiciona esforço inicial e operacional. Sem acesso: orientação e suporte sem administração direta.</small></span></label>
+            </div>
+            <div class="form-grid">
+              <div class="form-field"><label for="onprem-support">Horas mensais de suporte (por cliente)</label><input id="onprem-support" type="text" inputmode="decimal" value="2"></div>
+              <div class="form-field"><label for="onprem-setup">Horas adicionais de implantação</label><input id="onprem-setup" type="text" inputmode="decimal" value="0"></div>
+              <div class="form-field"><label for="onprem-setup-price">Preço candidato de implantação (R$)</label><input id="onprem-setup-price" type="text" inputmode="decimal" placeholder="Vazio = piso técnico"></div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button id="calculate" type="submit" class="btn primary large">Calcular produto e sustentabilidade</button>
+            <button id="reset" type="button" class="btn outlined">Restaurar hipóteses</button>
+            <span id="feedback" role="status" aria-live="polite">Conecte a matriz para iniciar.</span>
+          </div>
+        </section>
+      </fieldset>
+    </form>
+
+    <section id="outcome" class="surface results" hidden aria-labelledby="outcome-title">
+      <div class="section-row">
+        <div><span class="section-number">04</span><h2 id="outcome-title">Quanto custa sustentar esta oferta?</h2><p id="scenario-caption">—</p></div>
+        <span class="status-tag">Estudo · não é tabela oficial</span>
+      </div>
+      <div class="missing-block" id="incomplete" hidden>
+        <h3>Dados insuficientes para calcular</h3>
+        <p>Os seguintes parâmetros econômicos estão ausentes ou sem valor. Nenhum deles foi substituído por zero.</p>
+        <ul id="missing-parameters"></ul>
+      </div>
+      <div id="calculated" hidden>
+        <div class="kpi-grid">
+          <div class="kpi featured"><span id="floor-monthly-label">Piso mensal técnico</span><strong id="floor-monthly">—</strong><small id="floor-monthly-help">Para o cenário de uso previsto, sem receita incerta de recargas.</small></div>
+          <div class="kpi"><span id="floor-annual-label">Piso anual técnico</span><strong id="floor-annual">—</strong><small id="floor-annual-help">Doze meses, ajustado ao desconto anual e à taxa de pagamento.</small></div>
+          <div class="kpi"><span id="price-monthly-label">Valor mensal candidato</span><strong id="price-monthly">—</strong><small id="price-monthly-help">Preço testado, não aprovado.</small></div>
+          <div class="kpi"><span id="price-annual-label">Valor anual candidato</span><strong id="price-annual">—</strong><small id="price-annual-help">Preço anual da assinatura; recargas são adicionais.</small></div>
+        </div>
+
+        <div class="analysis-grid">
+          <div class="analysis-box">
+            <h3>Economia do produto</h3>
+            <dl id="economic-summary"></dl>
+          </div>
+          <div class="analysis-box">
+            <h3>Capacidade e consumo</h3>
+            <dl id="consumption-summary"></dl>
+          </div>
+        </div>
+        <div class="analysis-grid" id="recurring-outputs">
+          <div class="analysis-box">
+            <h3>Resultado com pagamento mensal</h3>
+            <dl id="monthly-result"></dl>
+          </div>
+          <div class="analysis-box">
+            <h3>Resultado com assinatura anual</h3>
+            <dl id="annual-result"></dl>
+          </div>
+        </div>
+
+        <div class="analysis-box section-wide" id="growth-analysis">
+          <h3>Sensibilidade ao crescimento</h3>
+          <p>O preço candidato permanece fixo. Mudam apenas quantidade de contratos, capacidade e custos proporcionais.</p>
+          <div class="table-scroll"><table>
+            <thead><tr><th>Contratos ativos</th><th>Capacidade necessária</th><th>Piso mensal</th><th>Piso com franquia cheia</th><th>Resultado mensal com preço candidato</th></tr></thead>
+            <tbody id="sensitivity"></tbody>
+          </table></div>
+        </div>
+        <div class="analysis-box section-wide">
+          <h3>O que ficou fora da conta?</h3>
+          <p>Não foi calculado valor confiável de desenvolvimento contínuo, apólices, compliance, incidentes extraordinários, variação de recursos por documento ou retenção histórica de arquivos sem medição. O custo de crédito neste estágio é uma hipótese de pesquisa, não medição de assinatura. Os resultados não validam uma política de cobrança automática.</p>
+        </div>
+      </div>
+      <details id="source-details" class="sources">
+        <summary>Mostrar exatamente de onde vieram os valores e fórmulas</summary>
+        <p>Valores lidos da matriz versionada pelo servidor e parâmetros declarados acima por você. Cada linha identifica unidade, origem e aprovação. São dados internos, não incluídos em propostas ao comprador.</p>
+        <div class="table-scroll"><table>
+          <thead><tr><th>Parâmetro</th><th>Valor</th><th>Unidade</th><th>Origem</th><th>Estado</th></tr></thead>
+          <tbody id="evidence-rows"></tbody>
+        </table></div>
+        <p><strong>Base de precificação:</strong> custos de capacidade, operações, créditos atendidos e aquisição, divididos pelo número de contratos. O piso mensal divide esse custo pelas receitas líquidas de tributos, perdas, taxas e margem requerida. O Managed usa plataforma compartilhada, mas substitui infraestrutura Cloud por hosting dedicado. O on-premise não inclui hospedagem. Recargas só entram na receita se forem simuladas como compradas.</p>
+        <dl class="provenance"><div><dt>SHA-256 da matriz</dt><dd><code id="matrix-sha">—</code></dd></div><div><dt>Identificador de simulação</dt><dd><code id="sim-sha">—</code></dd></div></dl>
+      </details>
+    </section>
+
+    <p class="footer-note">Para depurar o motor anterior, acesse a <a href="/internal/pricing-workbench/technical">visão técnica de custos</a>. Sem cobrança, publicação de preço ou exposição da matriz ao cliente.</p>
+  </main>
+</body>
+</html>

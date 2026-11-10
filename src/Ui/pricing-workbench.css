@@ -112,3 +112,34 @@ th { color: var(--muted); font-size: .78rem; }
   .notice { color: #ffeba8 !important; }
   .value-card.highlight { border-color: #3d7957; }
 }
+
+/* Configurable modality workbench. */
+.panel.compact { padding-bottom: 22px; }
+.foundation { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.model-explanation { margin: 24px 0 16px; padding: 18px 20px; border-left: 4px solid var(--accent); background: var(--surface-alt); border-radius: 0 10px 10px 0; }
+.model-explanation strong { display: block; margin-bottom: 3px; }
+.model-explanation p { margin: 0; color: var(--muted); font-size: .9rem; }
+.config-section { margin-top: 25px; padding-top: 23px; border-top: 1px solid var(--border); }
+.subheading { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; justify-content: space-between; margin-bottom: 17px; }
+.subheading h3 { margin: 0; font-size: 1rem; letter-spacing: -.01em; }
+.subheading span { font-size: .79rem; color: var(--muted); }
+.dynamic-fields { gap: 18px; }
+.switch-field { display: flex; flex-direction: column; padding: 13px 15px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-alt); }
+.switch-field .toggle { display: flex; gap: 11px; align-items: center; cursor: pointer; margin: 0; font-weight: 650; }
+.switch-field .toggle input { width: 20px; height: 20px; padding: 0; flex: 0 0 auto; accent-color: var(--accent); }
+.switch-field small { padding-left: 31px; }
+.muted-field { opacity: .62; }
+.breakdown { margin-top: 16px; }
+.breakdown-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px; }
+.breakdown-grid h4 { font-size: .86rem; font-weight: 650; color: var(--muted); margin: 0 0 9px; }
+.methodology { margin-top: 18px; padding: 15px 18px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-alt); }
+.methodology summary { font-weight: 650; cursor: pointer; }
+.methodology p { margin: 12px 0 0; font-size: .86rem; }
+.methodology code { white-space: normal; overflow-wrap: anywhere; }
+table td:nth-child(2) { white-space: normal; min-width: 220px; max-width: 420px; }
+@media (max-width: 750px) {
+  .foundation, .breakdown-grid { grid-template-columns: 1fr; }
+  .switch-field small { padding-left: 0; }
+  .actions { flex-wrap: wrap; }
+  .actions .button { flex: 1 1 180px; }
+}

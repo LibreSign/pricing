@@ -81,3 +81,12 @@ With `tests/Fixtures/economic-historical-synthetic.json` explicitly mounted **in
 | Customer infrastructure | 1 | BRL 1,142.86 | BRL 2,337.66 |
 
 The margin indicator should display `15%`; every result must have `activation_allowed=false`. A test that changes a JSON cost while retaining the same version should change the SHA-256/fingerprint and display a warning to reload the matrix. Bump the private version after any reviewed change. These numbers are fictional examples, not LibreSign sale prices.
+
+
+### Scenario customization in the browser workbench
+
+The interface now builds model-specific controls from the authenticated metadata response. It supports separate monthly document/user/storage quantities, backup/TSA/dedicated switches, additional support, optional recurring maintenance for customer-owned infrastructure, one-time migration, integrations, training and deployment effort, and independent recurring/setup candidate comparisons. Every selection is revalidated by the PHP engine. Do not treat the client-side form as an authorization boundary.
+
+An enabled scenario cost driver requires its model-specific unit-price or labor-hour coefficient in the versioned economic matrix, using the units and formulas documented in [Economic calculations](economic-calculation.md). A missing or null coefficient blocks the calculation. Only the explicit public fictional historical matrix has example values; the operational private matrix must be completed, reviewed and approved independently.
+
+The private interface remains disabled by default and has no action to edit economic parameters, publish prices, authorize quotes or activate customers. The local `poland` development preview may bind to `127.0.0.1:18081` under a separate operator-controlled, synthetic-only Compose configuration. This is **not** a public preview URL or a deployment recommendation.

@@ -25,6 +25,9 @@ final class EconomicWorkbenchHttpTest extends WebTestCase
             '/internal/pricing-workbench',
             '/internal/pricing-workbench.css',
             '/internal/pricing-workbench.js',
+            '/internal/pricing-workbench/technical',
+            '/internal/pricing-studio.css',
+            '/internal/pricing-studio.js',
         ] as $path) {
             $client->request('GET', $path);
             self::assertResponseStatusCodeSame(404);
@@ -40,7 +43,7 @@ final class EconomicWorkbenchHttpTest extends WebTestCase
         self::assertStringContainsString("script-src 'self'", (string) $page->headers->get('Content-Security-Policy'));
         self::assertStringContainsString("frame-ancestors 'none'", (string) $page->headers->get('Content-Security-Policy'));
         self::assertStringContainsString('no-store', (string) $page->headers->get('Cache-Control'));
-        self::assertStringContainsString('/internal/pricing-workbench.js', (string) $page->getContent());
+        self::assertStringContainsString('/internal/pricing-studio.js', (string) $page->getContent());
         self::assertStringNotContainsString('<script>', (string) $page->getContent());
 
         $script = $controller->script();

@@ -37,6 +37,7 @@ Economic results remain estimates pending governance and data homologation. No c
 - [Architecture and development](docs/development.md)
 - [Economic matrix contract](docs/economic-matrix.md)
 - [Economic simulation formulas](docs/economic-calculation.md)
+- [Product-first commercial offer lab, source evidence and provisional credits](docs/commercial-offer-lab.md)
 - [Private economic configuration and browser workbench](docs/private-economic-configuration.md)
 - [Private Docker homologation and controlled deployment](docs/homologation.md)
 - [Simulation API](docs/api.md)
