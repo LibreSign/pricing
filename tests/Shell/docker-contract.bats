@@ -105,7 +105,7 @@ setup() {
 
     run grep -c 'limit_req zone=pricing_requests burst=4 nodelay;' "$SOURCE/docker/nginx/pricing.conf"
     [ "$status" -eq 0 ]
-    [ "$output" -eq 4 ]
+    [ "$output" -eq 5 ]
 }
 
 @test "Commercial research requires the same protected API limits and private GET-only assets" {

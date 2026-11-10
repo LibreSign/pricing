@@ -83,3 +83,41 @@ The response is cost-confidential, never fit for customers or WooCommerce consum
 A future `PRIVATE_ECONOMICS` matrix needs verifiable source periods and costing for: shared compute and peak capacity, database, file storage and retention, bandwidth, backup and restore, monitoring, updates, security, TSA and notifications, payment provider, taxes and chargebacks, client acquisition and conversion, plus cooperative labor and reserve allocations. Performance benchmarks must quantify throughput **per unit**. A realistic sales/consumption cohort is needed for risk scenarios. All pricing conditions and the actual metering unit require approval before exposing a consumer-facing catalog.
 
 A future entitlement/credit ledger must protect idempotency, initial reservation, consistency between document and signer events, refunds, expired allowances, authorized reloads, balances, corrections and reconciliation with WooCommerce payments. The pricing calculator alone must not be treated as that ledger.
+
+
+## Interactive resource-to-credit scenarios (research-only extension)
+
+The analyst may select individual **signer-document completion obligations**, enabled users per month, average storage GB-month, API calls per month, and TSA-stamped documents per month. These are distinct operational drivers, not five separately approved billable metrics. For a research-only convertible unit, the server computes:
+
+```
+exact_credit_demand = completed_signer_document_obligations * obligation_weight
+                    + enabled_users * user_month_weight
+                    + average_storage_GB_month * storage_weight
+                    + API_calls * api_call_weight
+                    + TSA_documents * TSA_weight
+credit_demand = ceil(exact_credit_demand)
+remaining_allowance = included_credits - credit_demand
+```
+
+The fictional matrix defines these `offer.credit_weight.*` weights with explicit units and provenance; the client can adjust each weight in a simulation without modifying the file. The actual contractual credit formula is **not yet approved**. Slider motion updates the allowance, remaining balance, excess and per-resource contribution instantly in the browser. After interaction settles, the browser sends the complete exact decimal factors and quantities to the authenticated API and refreshes the financial result from the **server-owned** algorithm. A stale result is never deliberately relabeled as current. The separate `resource_usage` request field replaces the legacy aggregate `credits_per_account` when present (set it to zero); the server rejects an incomplete list of usage drivers, unknown units, unsuitable model or excessive credits.
+
+Sample fictitious initial values: 55 completed obligations, 5 users, 20 GB-month, 1,000 API calls and 10 TSA documents with respective fictional weights 1, 2, 0.5, 0.010 and 1.5. They total 100 **hypothetical** monthly credits, not a calibrated actual package. The monthly allowance and payment prices can also be adjusted with sliders. Credit consumption does not produce invoice or debit events.
+
+For economical experimentation, the browser offers sliders and exact input fields for monthly package price, annual discount, top-up price, growth, contract equivalents, support/setup hours and restricted internal coefficients (hourly cost benchmark, infrastructure size/cost, processing/tax/margin and acquisition) where relevant. These are *overrides specific to one research request*, not catalog writes or authorized selling prices. The simulation fingerprint includes both normal inputs and overrides. Each overridden coefficient is marked `ANALYST_SCENARIO_OVERRIDE` in the response, while the matrix and its original SHA-256 remain unchanged.
+
+The financial result makes the following distinction explicit for setup:
+
+```
+direct_labor_cost = setup_hours * collective_hour_cost
+reference_setup_price = (direct_labor_cost + fixed_payment_fee)
+                        / (1 - tax_fraction - expected_default_fraction
+                             - variable_payment_fraction - target_margin_fraction)
+```
+
+For example, the **invented** Managed fixture contains 16 hours at R$ 90.00 per hour, giving R$ 1,440.00 labor cost. At the fixture's tax 6%, expected default 2%, variable processor 3.5%, target margin 15% and R$ 0.80 payment fee, the model produces an estimated **R$ 1,960.27 selling-price floor**, not an R$ 1,960.27 labor cost. That R$ 90/hour **cannot be assumed to equal LibreCode's commercial billing rate or actual cooperative cost**.
+
+### Confidential API boundaries
+
+`GET /v1/economic-metadata` stays limited to nonfinancial model and field metadata; even the analyst bearer cannot obtain economic figures there. The separate `GET /v1/offer-parameters` is **analyst-only**, returns the parameter-matrix version, credit weights and research cost coefficients without opening them to a public pricing page. `POST /v1/offer-simulations` remains analyst-only and accepts optional `resource_usage`, `credit_weights` and `economic_overrides`. The UI preview is disabled by default and loopback-bound in the local Compose environment. No monetary coefficient, private source or bearer token is embedded in public JS or CSS.
+
+The economic assumptions used here are deliberately fictitious. For final tariffs, measure technical unit consumption and reconcile the economic matrix against verified provider invoices, operational hours, taxes, payment processor, marketing cost and cooperative policy. Never publish a tariff or activate a payment based on these samples.

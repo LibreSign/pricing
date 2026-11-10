@@ -81,13 +81,28 @@ final readonly class CommercialOfferEngine
             }
         }
 
+        if (array_diff(array_keys($input->economicOverrides), array_keys($needed)) !== []) {
+            throw new InvalidSimulationInput('An override does not apply to this modality.');
+        }
         $values = [];
         $missing = [];
         $evidence = [];
         foreach ($needed as $id => $unit) {
-            $evidence[] = $matrix->evidence($id) ?? ['id' => $id, 'unit' => $unit, 'value' => null, 'source' => 'NOT_SUPPLIED', 'approval_status' => 'not_approved_for_commercial_use'];
+            $entry = $matrix->evidence($id) ?? ['id' => $id, 'unit' => $unit, 'value' => null, 'source' => 'NOT_SUPPLIED', 'approval_status' => 'not_approved_for_commercial_use'];
+            if (isset($input->economicOverrides[$id])) {
+                $entry['value'] = $input->economicOverrides[$id];
+                $entry['source'] = 'ANALYST_SCENARIO_OVERRIDE';
+                $entry['approval_status'] = 'not_approved_for_commercial_use';
+            }
+            $evidence[] = $entry;
             try {
                 $value = $matrix->optionalDecimal($id, $unit);
+                if (isset($input->economicOverrides[$id])) {
+                    if ($entry['unit'] !== $unit) {
+                        throw new \InvalidArgumentException('Parameter unit mismatch.');
+                    }
+                    $value = BigDecimal::of($input->economicOverrides[$id]);
+                }
             } catch (\InvalidArgumentException $exception) {
                 throw new CatalogUnavailable('Invalid unit in commercial matrix.', 0, $exception);
             }
@@ -142,11 +157,48 @@ final readonly class CommercialOfferEngine
                 }
             }
         }
+        $creditConsumption = null;
+        $demandCredits = $input->creditsPerAccount;
+        if ($input->resourceUsage !== null) {
+            $weights = [];
+            foreach (CreditUsage::COMPONENTS as $field => $definition) {
+                $id = 'offer.credit_weight.'.$field;
+                $entry = $matrix->evidence($id) ?? [
+                    'id' => $id, 'unit' => $definition['unit'], 'value' => null,
+                    'source' => 'NOT_SUPPLIED', 'approval_status' => 'not_approved_for_commercial_use',
+                ];
+                if (isset($input->creditWeights[$field])) {
+                    $entry['value'] = $input->creditWeights[$field];
+                    $entry['source'] = 'ANALYST_SCENARIO_OVERRIDE';
+                    $entry['approval_status'] = 'not_approved_for_commercial_use';
+                }
+                $evidence[] = $entry;
+                $catalog = $matrix->optionalDecimal($id, $definition['unit']);
+                if ($catalog === null && !isset($input->creditWeights[$field])) {
+                    $missing[] = $id;
+                    continue;
+                }
+                $weights[$field] = $input->creditWeights[$field] ?? (string) $catalog;
+            }
+            if ($missing !== []) {
+                return array_replace($base, [
+                    'status' => 'incomplete', 'missing_parameters' => $missing, 'evidence' => $evidence,
+                    'calculation' => null,
+                ]);
+            }
+            $creditConsumption = CreditUsage::calculate($input->resourceUsage, $weights);
+            $demandCredits = $creditConsumption['total_credits'];
+            if ($demandCredits > $input->includedCredits
+                && BigDecimal::of($input->topupTakeRate)->compareTo(0) > 0
+                && $input->candidateTopupPrice === null) {
+                throw new InvalidSimulationInput('Purchased extra credits require a top-up price.');
+            }
+        }
         $topupRate = BigDecimal::of($input->topupTakeRate);
-        $overage = max(0, $input->creditsPerAccount - $input->includedCredits);
+        $overage = max(0, $demandCredits - $input->includedCredits);
         $packs = intdiv($overage + $input->topupCredits - 1, $input->topupCredits);
         // Unpurchased over-quota demand is blocked, not served for free.
-        $served = BigDecimal::of(min($input->creditsPerAccount, $input->includedCredits))
+        $served = BigDecimal::of(min($demandCredits, $input->includedCredits))
             ->plus(BigDecimal::of($overage)->multipliedBy($topupRate));
         $averagePacks = BigDecimal::of($packs)->multipliedBy($topupRate);
 
@@ -188,9 +240,22 @@ final readonly class CommercialOfferEngine
             'setup_candidate' => $model === 'cloud' || $input->candidateSetupPrice === null ? null : $this->money($setupCandidate),
             'setup_cost' => $projectRequired ? $this->money($setupCost) : null,
             'setup_hours' => $projectRequired ? (string) $setupHours : null,
+            'setup_formula' => $projectRequired ? [
+                'hourly_cost' => $this->money($hourly),
+                'hours' => (string) $setupHours,
+                'direct_labor_cost' => $this->money($setupCost),
+                'payment_fixed' => $this->money($values['offer.common.payment_fixed']),
+                'tax_rate' => (string) $rates['simulation.tax'],
+                'default_rate' => (string) $rates['simulation.default'],
+                'payment_rate' => (string) $rates['offer.common.payment_rate'],
+                'target_margin' => (string) $margin,
+                'net_denominator' => (string) $denominator,
+                'reference_price' => $this->money($setupRecommended),
+            ] : null,
             'setup_net_contribution' => $model === 'cloud' || $input->candidateSetupPrice === null ? null : $this->money($setupNet),
             'included_credits' => $model === 'customer_infrastructure' ? null : $input->includedCredits,
-            'average_credits_requested' => $model === 'customer_infrastructure' ? null : $input->creditsPerAccount,
+            'average_credits_requested' => $model === 'customer_infrastructure' ? null : $demandCredits,
+            'resource_credit_breakdown' => $creditConsumption,
             'average_credits_served' => $model === 'customer_infrastructure' ? null : (string) $served,
             'additional_packs_if_fully_recharged' => $model === 'customer_infrastructure' ? null : $packs,
             'average_packs_purchased' => $model === 'customer_infrastructure' ? null : (string) $averagePacks,
@@ -208,7 +273,7 @@ final readonly class CommercialOfferEngine
             sort($forAccountCounts);
             $main = null;
             foreach ($forAccountCounts as $n) {
-                $projection = $this->project($input, $values, $rates, $served, $averagePacks, $denominator, $n);
+                $projection = $this->project($input, $values, $rates, $served, $averagePacks, $denominator, $n, $demandCredits);
                 $calculation['sensitivity'][] = $projection;
                 if ($n === $input->accounts) {
                     $main = $projection;
@@ -230,6 +295,7 @@ final readonly class CommercialOfferEngine
         }
 
         return array_replace($base, [
+            'evidence' => $evidence,
             'status' => 'calculated',
             'missing_parameters' => [],
             'calculation' => $calculation,
@@ -249,6 +315,7 @@ final readonly class CommercialOfferEngine
         BigDecimal $averagePacks,
         BigDecimal $denominator,
         int $accounts,
+        int $demandCredits,
     ): array {
         $model = $input->model;
         $cloud = $model === 'cloud';
@@ -304,7 +371,7 @@ final readonly class CommercialOfferEngine
 
         // Subscription prices must survive all included credits being exercised.
         // They do not rely on uncertain future recharge revenue.
-        $baseUnits = min($input->creditsPerAccount, $input->includedCredits);
+        $baseUnits = min($demandCredits, $input->includedCredits);
         $baseUnitCost = $cloud || $managed
             ? BigDecimal::of($baseUnits)->multipliedBy($values['offer.common.unit_credit_cost'])->multipliedBy($accounts)
             : BigDecimal::zero();

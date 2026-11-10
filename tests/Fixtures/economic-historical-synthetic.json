@@ -444,6 +444,41 @@
             "unit": "hours/customer_period",
             "source": "FICTIONAL_TEST_FIXTURE",
             "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.credit_weight.signed_obligations",
+            "value": "1.00",
+            "unit": "credit/obligation",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.credit_weight.users",
+            "value": "2.00",
+            "unit": "credit/user_period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.credit_weight.storage_gb",
+            "value": "0.50",
+            "unit": "credit/GB_period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.credit_weight.api_calls",
+            "value": "0.010",
+            "unit": "credit/api_call",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.credit_weight.tsa_documents",
+            "value": "1.50",
+            "unit": "credit/tsa_document",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
         }
     ]
 }

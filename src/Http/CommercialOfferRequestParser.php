@@ -31,7 +31,7 @@ final readonly class CommercialOfferRequestParser
                 'model', 'parameter_version', 'accounts', 'credits_per_account', 'included_credits', 'topup_credits',
                 'topup_take_rate', 'annual_discount', 'acquisition_rate', 'candidate_monthly_price',
                 'candidate_topup_price', 'candidate_setup_price', 'support_hours', 'setup_extra_hours',
-                'remote_access', 'recurring_maintenance', 'include_setup',
+                'remote_access', 'recurring_maintenance', 'include_setup', 'resource_usage', 'credit_weights', 'economic_overrides',
             ]) !== []
             || !is_string($data['model'] ?? null)
             || !is_string($data['parameter_version'] ?? null)
@@ -49,8 +49,19 @@ final readonly class CommercialOfferRequestParser
             || (isset($data['setup_extra_hours']) && !is_string($data['setup_extra_hours']))
             || (isset($data['remote_access']) && !is_bool($data['remote_access']))
             || (isset($data['recurring_maintenance']) && !is_bool($data['recurring_maintenance']))
-            || (isset($data['include_setup']) && !is_bool($data['include_setup']))) {
+            || (isset($data['include_setup']) && !is_bool($data['include_setup']))
+            || (isset($data['resource_usage']) && !is_array($data['resource_usage']))
+            || (isset($data['credit_weights']) && !is_array($data['credit_weights']))
+            || (isset($data['economic_overrides']) && !is_array($data['economic_overrides']))) {
             throw new ApiProblem(422, 'invalid_input');
+        }
+
+        foreach (['credit_weights', 'economic_overrides'] as $key) {
+            foreach ($data[$key] ?? [] as $value) {
+                if (!is_string($value)) {
+                    throw new ApiProblem(422, 'invalid_input');
+                }
+            }
         }
 
         return new CommercialOfferInput(
@@ -71,6 +82,9 @@ final readonly class CommercialOfferRequestParser
             remoteAccess: $data['remote_access'] ?? false,
             recurringMaintenance: $data['recurring_maintenance'] ?? true,
             includeSetup: $data['include_setup'] ?? true,
+            resourceUsage: $data['resource_usage'] ?? null,
+            creditWeights: $data['credit_weights'] ?? [],
+            economicOverrides: $data['economic_overrides'] ?? [],
         );
     }
 }

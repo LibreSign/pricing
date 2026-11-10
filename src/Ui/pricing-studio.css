@@ -149,3 +149,43 @@ tr.selected-row { background: var(--green-soft); font-weight: 710; }
   input[type="text"], input[type="password"], input[type="number"] { background: #1a2820; border-color: #647b6b; }
   .product-option.selected { border-color: #85d1a5; }
 }
+
+/* Interactive credit budget and analyst sliders */
+.range-input { display:block; width:100%; height:23px; border:0; padding:0; margin-top:10px; accent-color:var(--green); cursor:ew-resize; background:transparent; }
+.range-input:disabled { opacity:.3; cursor:not-allowed; }
+.range-input:focus-visible { outline:3px solid #90c8a9; outline-offset:2px; }
+.form-field:has(.range-input) input[type="text"], .form-field:has(.range-input) input[type="number"] { font-variant-numeric:tabular-nums; }
+.computed-field { display:flex; height:45px; align-items:center; width:100%; padding:10px 13px; border:1px solid var(--border); border-radius:9px; background:var(--green-soft); font-weight:780; font-variant-numeric:tabular-nums; }
+.credit-lab { margin-top:26px; padding:22px; background:var(--panel-muted); border:1px solid var(--border); border-radius:13px; }
+.credit-lab.invalid-input { border-color:#ad5353; }
+.credit-intro { display:flex; gap:16px; align-items:flex-start; justify-content:space-between; }
+.credit-intro h3 { margin:0 0 6px; font-size:1.02rem; }
+.credit-intro p { font-size:.83rem; color:var(--muted); margin:0; max-width:700px; }
+.credit-status { min-width:150px; text-align:right; }
+.credit-status small { display:block; color:var(--muted); font-size:.74rem; }
+.credit-status strong { display:block; font-size:1.3rem; font-variant-numeric:tabular-nums; }
+.credit-meter { height:13px; overflow:hidden; border-radius:20px; background:var(--border); margin-top:17px; }
+.credit-meter > div { height:100%; width:0; background:var(--green); border-radius:20px; transition:width .08s linear; }
+.credit-meter > div.overdrawn { background:#d1772c; }
+.credit-stats { display:flex; justify-content:space-between; gap:12px; color:var(--muted); font-size:.8rem; margin:7px 0 24px; }
+.usage-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:19px; }
+.usage-grid .form-field { min-width:0; }
+.credit-lab .weight-details { border-top:1px solid var(--border); margin-top:20px; padding-top:17px; }
+.weight-details summary { font-size:.86rem; font-weight:710; cursor:pointer; }
+.weight-details p { font-size:.8rem; color:var(--muted); }
+.weight-details .form-grid { margin-top:16px; }
+.breakdown-inline { margin-top:19px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px 20px; }
+.breakdown-inline > div { display:flex; align-items:center; justify-content:space-between; gap:11px; padding:8px 0; border-bottom:1px solid var(--border); font-size:.8rem; }
+.breakdown-inline strong { font-variant-numeric:tabular-nums; white-space:nowrap; }
+.live-status { display:block; font-size:.76rem; color:var(--muted); margin-top:13px; }
+.results.stale-result { opacity:.67; }
+@media (max-width:950px) { .usage-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:680px) { .usage-grid,.breakdown-inline { grid-template-columns:1fr; } .credit-intro { flex-direction:column; } .credit-status { text-align:left; } .credit-lab { padding:15px; } .credit-stats { flex-wrap:wrap; } }
+.live-plan-strip { display:flex; align-items:center; flex-wrap:wrap; gap:14px 26px; border-radius:11px; background:var(--green-soft); border:1px solid var(--border); padding:15px 18px; margin-top:19px; }
+.live-plan-strip > div {display:flex; flex-direction:column; min-width:140px;}
+.live-plan-strip small {font-size:.76rem; color:var(--muted);}
+.live-plan-strip strong {font-size:1.3rem; font-weight:760; font-variant-numeric:tabular-nums;}
+.live-plan-strip p {margin:0; font-size:.77rem; color:var(--muted);}
+.economic-controls {margin-top:26px; padding:18px 0 0; border-top:1px solid var(--border);}
+.economic-controls summary {font-size:.93rem;}
+.economic-controls .form-grid {padding:8px 0 0;}

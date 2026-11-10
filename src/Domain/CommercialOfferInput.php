@@ -31,6 +31,12 @@ final readonly class CommercialOfferInput
         public bool $remoteAccess = false,
         public bool $recurringMaintenance = true,
         public bool $includeSetup = true,
+        /** @var array<string, int>|null */
+        public ?array $resourceUsage = null,
+        /** @var array<string, string> */
+        public array $creditWeights = [],
+        /** @var array<string, string> */
+        public array $economicOverrides = [],
     ) {
         if (!in_array($model, ['cloud', 'managed', 'customer_infrastructure'], true)
             || preg_match('/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/D', $parameterVersion) !== 1
@@ -54,7 +60,30 @@ final readonly class CommercialOfferInput
             || (!$includeSetup && !$remoteAccess && $candidateSetupPrice !== null)) {
             throw new InvalidSimulationInput('Invalid commercial offer hypothesis.');
         }
-        if ($model !== 'customer_infrastructure'
+        EconomicOfferControls::validate($economicOverrides);
+        if ($resourceUsage !== null) {
+            if ($model === 'customer_infrastructure' || $creditsPerAccount !== 0
+                || array_diff(array_keys(CreditUsage::COMPONENTS), array_keys($resourceUsage)) !== []
+                || array_diff(array_keys($resourceUsage), array_keys(CreditUsage::COMPONENTS)) !== []) {
+                throw new InvalidSimulationInput('Resource usage must be complete, supported, and exclusive to Cloud/Managed.');
+            }
+            foreach (CreditUsage::COMPONENTS as $id => $component) {
+                $quantity = $resourceUsage[$id] ?? null;
+                if (!is_int($quantity) || $quantity < 0 || $quantity > $component['maximum']) {
+                    throw new InvalidSimulationInput('Invalid usage quantity: '.$id);
+                }
+            }
+        }
+        if (array_diff(array_keys($creditWeights), array_keys(CreditUsage::COMPONENTS)) !== []
+            || ($resourceUsage === null && $creditWeights !== [])) {
+            throw new InvalidSimulationInput('Credit weights require resource usage.');
+        }
+        foreach ($creditWeights as $weight) {
+            if (preg_match('/^(?:0|[1-9][0-9]{0,2})(?:\.[0-9]{1,3})?$/D', $weight) !== 1) {
+                throw new InvalidSimulationInput('Credit weight must be a decimal between 0 and 999.');
+            }
+        }
+        if ($model !== 'customer_infrastructure' && $resourceUsage === null
             && $creditsPerAccount > $includedCredits
             && \Brick\Math\BigDecimal::of($topupTakeRate)->compareTo(0) > 0
             && $candidateTopupPrice === null) {
@@ -83,6 +112,9 @@ final readonly class CommercialOfferInput
             'remote_access' => $this->remoteAccess,
             'recurring_maintenance' => $this->recurringMaintenance,
             'include_setup' => $this->includeSetup,
+            'resource_usage' => $this->resourceUsage,
+            'credit_weights' => $this->creditWeights,
+            'economic_overrides' => $this->economicOverrides,
         ];
     }
 

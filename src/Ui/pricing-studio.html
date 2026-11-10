@@ -81,7 +81,7 @@
               <small id="accounts-help">Teste 10, 100 ou 1.000 contratos. É uma hipótese de aquisição, não um dado obrigatório do cliente.</small>
             </div>
             <div class="form-field">
-              <label for="candidate-monthly">Preço mensal candidato (R$)</label>
+              <label for="candidate-monthly">Mensalidade para simulação (R$)</label>
               <input id="candidate-monthly" type="text" inputmode="decimal" autocomplete="off" placeholder="Deixe vazio para calcular o piso">
               <small>Opcional. Serve para testar uma proposta de preço fixo.</small>
             </div>
@@ -96,12 +96,37 @@
             <h3>Franquia e recargas <span class="annotation">Unidade de crédito ainda experimental</span></h3>
             <div class="form-grid">
               <div class="form-field"><label for="included">Créditos incluídos por mês</label><input id="included" type="number" min="0" max="1000000" step="1" value="100"><small>Franquia mensal; não acumula para o mês seguinte.</small></div>
-              <div class="form-field"><label for="demand">Demanda por cliente no mês (créditos)</label><input id="demand" type="number" min="0" max="1000000" step="1" value="100"><small>Simulação de uso, não previsão de usuários.</small></div>
+              <div class="form-field"><label>Consumo mensal estimado</label><output id="demand" class="computed-field">100 créditos</output><small>Calculado automaticamente a partir dos recursos abaixo.</small></div>
               <div class="form-field"><label for="topup-units">Créditos em cada recarga</label><input id="topup-units" type="number" min="1" max="1000000" step="1" value="50"></div>
               <div class="form-field"><label for="topup-price">Preço de uma recarga (R$)</label><input id="topup-price" type="text" inputmode="decimal" autocomplete="off" placeholder="Ex.: 10,00"></div>
               <div class="form-field"><label for="take-rate">Compradores de recarga (%)</label><input id="take-rate" type="text" inputmode="decimal" value="0"><small>0% conservador: ao atingir o limite, o consumo não é atendido.</small></div>
               <div class="form-field"><label for="acquisition-rate">Novos clientes no mês (% da base)</label><input id="acquisition-rate" type="text" inputmode="decimal" value="0"><small>Considera custo de aquisição por novo assinante configurado na matriz.</small></div>
             </div>
+            <section class="credit-lab" aria-labelledby="credit-lab-title">
+              <div class="credit-intro">
+                <div><h3 id="credit-lab-title">Simule o consumo da franquia</h3>
+                  <p>Arraste os controles. Cada recurso consome créditos conforme o peso indicado; a soma arredondada para cima é o débito estimado.</p></div>
+                <div class="credit-status"><small>Saldo após uso</small><strong id="credit-balance">—</strong></div>
+              </div>
+              <div class="credit-meter" role="progressbar" aria-label="Consumo da franquia" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="credit-meter">
+                <div id="credit-fill"></div>
+              </div>
+              <div class="credit-stats"><span id="credits-used">100 de 100 créditos</span><span id="credits-extra">Nenhuma recarga necessária</span></div>
+              <div class="usage-grid">
+                <div class="form-field"><label for="usage-signed_obligations">Obrigações de assinatura concluídas</label><input id="usage-signed_obligations" type="number" min="0" max="1000000" value="55" step="1"><small>Uma obrigação concluída por signatário e documento, sem duplicar o envelope.</small></div>
+                <div class="form-field"><label for="usage-users">Usuários habilitados</label><input id="usage-users" type="number" min="0" max="100000" value="5" step="1"><small>Quantidade ativa por contrato e mês.</small></div>
+                <div class="form-field"><label for="usage-storage_gb">Armazenamento (GB-mês)</label><input id="usage-storage_gb" type="number" min="0" max="100000" value="20" step="1"><small>Volume médio reservado por mês, não uploads totais.</small></div>
+                <div class="form-field"><label for="usage-api_calls">Chamadas de API</label><input id="usage-api_calls" type="number" min="0" max="1000000" value="1000" step="1"><small>Chamadas processadas; preço por operação ainda não homologado.</small></div>
+                <div class="form-field"><label for="usage-tsa_documents">Documentos com TSA</label><input id="usage-tsa_documents" type="number" min="0" max="1000000" value="10" step="1"><small>Uso do serviço de carimbo do tempo.</small></div>
+              </div>
+              <details class="weight-details">
+                <summary>Ajustar os pesos dos créditos (hipóteses de pesquisa)</summary>
+                <p>Os pesos iniciais vêm da matriz versionada. Alterá-los muda somente esta simulação, não a tarifa da plataforma nem o saldo de clientes.</p>
+                <div class="form-grid" id="credit-factor-fields"></div>
+              </details>
+              <div class="breakdown-inline" id="credit-breakdown" aria-live="polite"></div>
+              <span class="live-status" id="recalculation-status" role="status" aria-live="polite">Valores econômicos calculados pelo servidor após alterar os controles.</span>
+            </section>
             <p class="inline-warning"><strong>Atenção ao conceito de crédito:</strong> a unidade faturável não foi homologada. Documentos, signatários, API, TSA e armazenamento podem receber pesos diferentes após medição técnica. A hipótese de medição anterior considerava cada obrigação signatário–documento concluída, sem contar o envelope novamente. Ainda precisa de validação técnica e contratual. Este protótipo simula unidades equivalentes, sem debitar saldo nem gerar faturas.</p>
           </div>
 
@@ -128,6 +153,14 @@
             </div>
           </div>
 
+          <details class="weight-details economic-controls" id="economic-controls-panel">
+            <summary>Editar parâmetros econômicos e custos do cenário</summary>
+            <p>Deslize custo horário, horas-base, infraestrutura, tributos, taxas e margem. Cada alteração é exclusiva desta simulação, sem modificar a matriz de referência.</p>
+            <div class="form-grid" id="economic-control-fields"></div>
+          </details>
+
+          <div class="live-plan-strip" id="live-plan-strip"><div><small>Mensalidade selecionada</small><strong id="live-monthly">R$ 39,00</strong></div><div><small>Assinatura anual (com desconto)</small><strong id="live-annual">R$ 468,00</strong></div><p>Valores ilustrativos da simulação; o custo econômico é recalculado pelo servidor.</p></div>
+
           <div class="form-actions">
             <button id="calculate" type="submit" class="btn primary large">Calcular produto e sustentabilidade</button>
             <button id="reset" type="button" class="btn outlined">Restaurar hipóteses</button>
@@ -151,8 +184,8 @@
         <div class="kpi-grid">
           <div class="kpi featured"><span id="floor-monthly-label">Piso mensal técnico</span><strong id="floor-monthly">—</strong><small id="floor-monthly-help">Para o cenário de uso previsto, sem receita incerta de recargas.</small></div>
           <div class="kpi"><span id="floor-annual-label">Piso anual técnico</span><strong id="floor-annual">—</strong><small id="floor-annual-help">Doze meses, ajustado ao desconto anual e à taxa de pagamento.</small></div>
-          <div class="kpi"><span id="price-monthly-label">Valor mensal candidato</span><strong id="price-monthly">—</strong><small id="price-monthly-help">Preço testado, não aprovado.</small></div>
-          <div class="kpi"><span id="price-annual-label">Valor anual candidato</span><strong id="price-annual">—</strong><small id="price-annual-help">Preço anual da assinatura; recargas são adicionais.</small></div>
+          <div class="kpi"><span id="price-monthly-label">Mensalidade do cenário</span><strong id="price-monthly">—</strong><small id="price-monthly-help">Hipótese comercial editável, ainda não homologada.</small></div>
+          <div class="kpi"><span id="price-annual-label">Assinatura anual do cenário</span><strong id="price-annual">—</strong><small id="price-annual-help">Preço anual da assinatura; recargas são adicionais.</small></div>
         </div>
 
         <div class="analysis-grid">
