@@ -28,20 +28,25 @@ final readonly class EconomicRequestParser
             throw new ApiProblem(400, 'invalid_json');
         }
         if (!is_array($decoded) || array_is_list($decoded)
-            || array_diff(array_keys($decoded), ['model', 'parameter_version', 'customers', 'candidate_price']) !== []) {
+            || array_diff(array_keys($decoded), ['model', 'parameter_version', 'customers', 'candidate_price', 'candidate_setup_price', 'scenario']) !== []) {
             throw new ApiProblem(422, 'invalid_input');
         }
         if (!is_string($decoded['model'] ?? null)
             || !is_string($decoded['parameter_version'] ?? null)
             || !is_int($decoded['customers'] ?? null)
-            || (isset($decoded['candidate_price']) && !is_string($decoded['candidate_price']))) {
+            || (array_key_exists('candidate_price', $decoded) && $decoded['candidate_price'] !== null && !is_string($decoded['candidate_price']))
+            || (array_key_exists('candidate_setup_price', $decoded) && $decoded['candidate_setup_price'] !== null && !is_string($decoded['candidate_setup_price']))
+            || (array_key_exists('scenario', $decoded) && (!is_array($decoded['scenario']) || ($decoded['scenario'] !== [] && array_is_list($decoded['scenario']))))) {
             throw new ApiProblem(422, 'invalid_input');
         }
+
         return new EconomicScenarioInput(
             $decoded['model'],
             $decoded['parameter_version'],
             $decoded['customers'],
             $decoded['candidate_price'] ?? null,
+            $decoded['scenario'] ?? [],
+            $decoded['candidate_setup_price'] ?? null,
         );
     }
 }

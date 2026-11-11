@@ -105,5 +105,27 @@ setup() {
 
     run grep -c 'limit_req zone=pricing_requests burst=4 nodelay;' "$SOURCE/docker/nginx/pricing.conf"
     [ "$status" -eq 0 ]
-    [ "$output" -eq 3 ]
+    [ "$output" -eq 5 ]
+}
+
+@test "Commercial research requires the same protected API limits and private GET-only assets" {
+    local offer_block
+    offer_block="$(awk '
+        /location = \/v1\/offer-simulations/ { capture=1; next }
+        capture && /^    }/ { exit }
+        capture { print }
+    ' "$SOURCE/docker/nginx/pricing.conf")"
+    [[ "$offer_block" == *'limit_except POST { deny all; }'* ]]
+    [[ "$offer_block" == *'limit_req zone=pricing_requests burst=4 nodelay;'* ]]
+    [[ "$offer_block" == *'fastcgi_param HTTP_AUTHORIZATION $http_authorization;'* ]]
+
+    local private_assets
+    private_assets="$(awk '
+        /# Separate internal static assets/ { capture=1; next }
+        capture && /^    }/ { exit }
+        capture { print }
+    ' "$SOURCE/docker/nginx/pricing.conf")"
+    [[ "$private_assets" == *'pricing-studio'* ]]
+    [[ "$private_assets" == *'limit_except GET { deny all; }'* ]]
+    [[ "$private_assets" != *'limit_req zone=pricing_requests'* ]]
 }

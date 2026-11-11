@@ -192,6 +192,293 @@
             "unit": "fraction",
             "source": "FICTIONAL_SCENARIO_REPRODUCTION",
             "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.cloud.document_unit",
+            "value": "0.08",
+            "unit": "BRL/document",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.cloud.user_unit",
+            "value": "1.50",
+            "unit": "BRL/user_period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.cloud.storage_gb_unit",
+            "value": "0.70",
+            "unit": "BRL/GB_period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.cloud.backup_gb_unit",
+            "value": "0.25",
+            "unit": "BRL/GB_period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.cloud.tsa_document_unit",
+            "value": "0.04",
+            "unit": "BRL/document",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.cloud.dedicated_period",
+            "value": "220.00",
+            "unit": "BRL/period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.cloud.priority_hours",
+            "value": "1.50",
+            "unit": "hours/customer_period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.cloud.integration_setup_hours",
+            "value": "5.00",
+            "unit": "hour/integration",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.cloud.migration_setup_hours",
+            "value": "0.20",
+            "unit": "hour/GB",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.managed.document_unit",
+            "value": "0.12",
+            "unit": "BRL/document",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.managed.user_unit",
+            "value": "2.00",
+            "unit": "BRL/user_period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.managed.storage_gb_unit",
+            "value": "0.90",
+            "unit": "BRL/GB_period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.managed.backup_gb_unit",
+            "value": "0.30",
+            "unit": "BRL/GB_period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.managed.tsa_document_unit",
+            "value": "0.05",
+            "unit": "BRL/document",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.managed.dedicated_period",
+            "value": "350.00",
+            "unit": "BRL/period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.managed.priority_hours",
+            "value": "3.00",
+            "unit": "hours/customer_period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.managed.integration_setup_hours",
+            "value": "10.00",
+            "unit": "hour/integration",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.managed.migration_setup_hours",
+            "value": "0.40",
+            "unit": "hour/GB",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.customer_infrastructure.priority_hours",
+            "value": "2.00",
+            "unit": "hours/customer_period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.customer_infrastructure.integration_setup_hours",
+            "value": "8.00",
+            "unit": "hour/integration",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "simulation.customer_infrastructure.migration_setup_hours",
+            "value": "0.50",
+            "unit": "hour/GB",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.common.unit_credit_cost",
+            "value": "0.08",
+            "unit": "BRL/credit",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.common.platform_per_contract",
+            "value": "1.00",
+            "unit": "BRL/customer_period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.common.cac_per_new_contract",
+            "value": "18.00",
+            "unit": "BRL/customer",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.common.payment_rate",
+            "value": "0.035",
+            "unit": "fraction",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.common.payment_fixed",
+            "value": "0.80",
+            "unit": "BRL/payment",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.cloud.host_node_monthly",
+            "value": "90.00",
+            "unit": "BRL/period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.cloud.node_contract_capacity",
+            "value": "150",
+            "unit": "customer",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.cloud.node_credit_capacity",
+            "value": "30000",
+            "unit": "credit/period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.cloud.shared_operations_monthly",
+            "value": "500.00",
+            "unit": "BRL/period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.managed.dedicated_node_monthly",
+            "value": "145.00",
+            "unit": "BRL/period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.managed.node_credit_capacity",
+            "value": "10000",
+            "unit": "credit/period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.managed.operations_hours_monthly",
+            "value": "3.00",
+            "unit": "hours/customer_period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.customer_infrastructure.remote_setup_hours",
+            "value": "4.00",
+            "unit": "hour/customer",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.customer_infrastructure.service_coordination_hours_monthly",
+            "value": "2.00",
+            "unit": "hours/customer_period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.customer_infrastructure.remote_maintenance_hours_monthly",
+            "value": "1.00",
+            "unit": "hours/customer_period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.credit_weight.signed_obligations",
+            "value": "1.00",
+            "unit": "credit/obligation",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.credit_weight.users",
+            "value": "2.00",
+            "unit": "credit/user_period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.credit_weight.storage_gb",
+            "value": "0.50",
+            "unit": "credit/GB_period",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.credit_weight.api_calls",
+            "value": "0.010",
+            "unit": "credit/api_call",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
+        },
+        {
+            "id": "offer.credit_weight.tsa_documents",
+            "value": "1.50",
+            "unit": "credit/tsa_document",
+            "source": "FICTIONAL_TEST_FIXTURE",
+            "approval_status": "not_approved_for_commercial_use"
         }
     ]
 }

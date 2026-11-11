@@ -100,6 +100,32 @@ final readonly class EconomicParameterMatrix
         return $value === null ? null : BigDecimal::of($value);
     }
 
+    public function optionalDecimal(string $id, string $unit): ?BigDecimal
+    {
+        if (!array_key_exists($id, $this->index)) {
+            return null;
+        }
+
+        return $this->decimal($id, $unit);
+    }
+
+    /** @return array{id: string, unit: string, value: string|null, source: string, approval_status: string}|null */
+    public function evidence(string $id): ?array
+    {
+        $item = $this->index[$id] ?? null;
+        if ($item === null) {
+            return null;
+        }
+
+        return [
+            'id' => $id,
+            'unit' => $item['unit'],
+            'value' => $item['value'],
+            'source' => $item['source'],
+            'approval_status' => $item['approval_status'],
+        ];
+    }
+
     public function requireDecimal(string $id, string $unit): BigDecimal
     {
         return $this->decimal($id, $unit)

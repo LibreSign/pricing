@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace LibreSign\Pricing\Controller;
 
+use LibreSign\Pricing\Domain\EconomicScenarioFields;
 use LibreSign\Pricing\Http\ApiProblem;
 use LibreSign\Pricing\Http\EconomicBearerAuthenticator;
 use LibreSign\Pricing\Infrastructure\CatalogUnavailable;
@@ -43,6 +44,7 @@ final readonly class EconomicMetadataController
                     'managed' => $matrix->model('managed')['billing_basis'],
                     'customer_infrastructure' => $matrix->model('customer_infrastructure')['billing_basis'],
                 ],
+                'scenario_fields' => EconomicScenarioFields::metadata(),
             ], 200, self::HEADERS);
         } catch (ApiProblem $problem) {
             return new JsonResponse($problem->toArray(), $problem->status, self::HEADERS);
