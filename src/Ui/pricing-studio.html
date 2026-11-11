@@ -45,6 +45,7 @@
       </div>
     </section>
 
+    <div class="workbench-layout">
     <form id="studio-form">
       <fieldset id="studio-fields" disabled>
         <section class="surface" aria-labelledby="product-title">
@@ -170,7 +171,7 @@
       </fieldset>
     </form>
 
-    <section id="outcome" class="surface results" hidden aria-labelledby="outcome-title">
+    <section id="outcome" class="surface results" hidden tabindex="0" aria-labelledby="outcome-title">
       <div class="section-row">
         <div><span class="section-number">04</span><h2 id="outcome-title">Quanto custa sustentar esta oferta?</h2><p id="scenario-caption">—</p></div>
         <span class="status-tag">Estudo · não é tabela oficial</span>
@@ -233,6 +234,13 @@
         <dl class="provenance"><div><dt>SHA-256 da matriz</dt><dd><code id="matrix-sha">—</code></dd></div><div><dt>Identificador de simulação</dt><dd><code id="sim-sha">—</code></dd></div></dl>
       </details>
     </section>
+    <aside class="surface awaiting-results" aria-labelledby="awaiting-results-title">
+      <span class="section-number">04</span>
+      <h2 id="awaiting-results-title">Resultado da simulação</h2>
+      <p>Carregue a matriz e ajuste a oferta para visualizar os preços, a composição de custos e a projeção de consumo ao lado dos controles.</p>
+      <p class="awaiting-note">A visualização financeira é calculada pela API interna. As alterações nos créditos aparecem imediatamente nos controles.</p>
+    </aside>
+    </div>
 
     <p class="footer-note">Para depurar o motor anterior, acesse a <a href="/internal/pricing-workbench/technical">visão técnica de custos</a>. Sem cobrança, publicação de preço ou exposição da matriz ao cliente.</p>
   </main>
