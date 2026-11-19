@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 FROM composer:2.11.0@sha256:278dfc7bd35169965d03f87194816f43bf4e6b6ea61707c2114e52ad12fe24ce AS composer-bin
 
-FROM php:8.5.12-fpm-alpine@sha256:4c2818074ec49f6abe46620f3965e0cb75bc3a5f2b417edd1aacaba6f091c40e AS base
+FROM php:8.5.12-fpm-alpine@sha256:951fb5b1780219b81d5daffa4cebef8e0077c537f3893d9790a5dfcd66ca334d AS base
 # The pinned PHP 8.5 image already ships mbstring and OPcache.
 RUN php -r 'exit(extension_loaded("mbstring") && extension_loaded("Zend OPcache") ? 0 : 1);'
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/pricing.ini
